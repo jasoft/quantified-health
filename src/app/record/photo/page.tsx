@@ -9,7 +9,7 @@ import { useRecordStore } from '@/store/useRecordStore';
 
 function resolveAttachmentUrl(photo?: NocoAttachment): string | null {
   if (!photo) return null;
-  const raw = photo.url ?? photo.path ?? '';
+  const raw = photo.url ?? photo.signedPath ?? photo.path ?? '';
   if (!raw) return null;
   if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
   return `${NOCODB_URL}${raw.startsWith('/') ? '' : '/'}${raw}`;

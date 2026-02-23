@@ -30,7 +30,7 @@ const MEAL_TARGET_RATIOS: Record<(typeof MEAL_ORDER)[number], number> = {
 
 function resolveAttachmentUrl(photo?: NocoAttachment): string | null {
   if (!photo) return null;
-  const raw = photo.url ?? photo.path ?? '';
+  const raw = photo.url ?? photo.signedPath ?? photo.path ?? '';
   if (!raw) return null;
   if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
   return `${NOCODB_URL}${raw.startsWith('/') ? '' : '/'}${raw}`;
@@ -104,7 +104,8 @@ export default function Home() {
   const consumedFat = foodRecords.reduce((sum, item) => sum + Number(item.fat), 0);
   const burnedCalories = exerciseCalories[selectedDate] || 0;
   const currentWater = waterIntake[selectedDate] || 0;
-  const dailyPhotoUrl = resolveAttachmentUrl(weightRecordsByDate[selectedDate]?.photo?.[0]);
+  const safeWeightRecordsByDate = weightRecordsByDate ?? {};
+  const dailyPhotoUrl = resolveAttachmentUrl(safeWeightRecordsByDate[selectedDate]?.photo?.[0]);
 
   const macroItems = [
     { label: '蛋白质', current: consumedProtein, target: userTarget.target_protein, color: 'bg-blue-300' },
@@ -212,12 +213,13 @@ export default function Home() {
           const mealFoods = groupedMeals[mealType];
           const mealCalories = mealFoods.reduce((sum, item) => sum + Number(item.calories), 0);
           const mealTarget = Math.round(userTarget.target_calories * MEAL_TARGET_RATIOS[mealType]);
+          const intakeText = mealFoods.length > 0 ? `已摄入${mealCalories}/${mealTarget}千卡` : '已摄入0千卡';
 
           return (
             <section key={mealType} className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 space-y-4">
               <div className="flex items-end gap-3">
                 <h2 className="text-4xl font-bold text-zinc-900 leading-none">{MEAL_LABELS[mealType]}</h2>
-                <p className="text-xl text-zinc-500">已摄入{mealCalories}/{mealTarget}千卡</p>
+                <p className="text-xl text-zinc-500">{intakeText}</p>
               </div>
 
               {mealFoods.length > 0 ? (

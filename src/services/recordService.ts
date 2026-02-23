@@ -1,4 +1,4 @@
-import { NOCODB_TOKEN, NOCODB_URL, nocodb, resolveBaseIdByTitle, resolveFieldIdByTitle, resolveTableIdByTitle } from '@/lib/nocodb';
+import { NOCODB_TOKEN, NOCODB_URL, nocodb, resolveTableIdByTitle } from '@/lib/nocodb';
 
 const FOOD_TABLE = 'FoodRecords';
 const WATER_TABLE = 'WaterRecords';
@@ -41,8 +41,10 @@ export interface NocoAttachment {
   title?: string;
   url?: string;
   path?: string;
+  signedPath?: string;
   mimetype?: string;
   size?: number;
+  thumbnails?: Record<string, { signedPath?: string }>;
 }
 
 export const recordService = {
@@ -137,14 +139,14 @@ export const recordService = {
     // Keep latest only by clearing old attachment first.
     await recordService.clearWeightPhoto(date);
 
-    const baseId = await resolveBaseIdByTitle();
     const tableId = await resolveTableIdByTitle(WEIGHT_TABLE);
-    const fieldId = await resolveFieldIdByTitle(WEIGHT_TABLE, 'photo');
     const formData = new FormData();
     formData.append('file', file);
 
-    const uploadResponse = await fetch(
-      `${NOCODB_URL}/api/v3/data/${baseId}/${tableId}/records/${upserted.Id}/fields/${fieldId}/upload`,
+    // NocoDB UI-compatible attachment flow:
+    // 1) upload to storage, 2) patch attachment object array to record field.
+    const storageUploadResponse = await fetch(
+      `${NOCODB_URL}/api/v2/storage/upload`,
       {
         method: 'POST',
         headers: {
@@ -154,10 +156,16 @@ export const recordService = {
       }
     );
 
-    if (!uploadResponse.ok) {
-      const text = await uploadResponse.text();
-      throw new Error(`Failed to upload weight photo: ${uploadResponse.status} ${text}`);
+    if (!storageUploadResponse.ok) {
+      const text = await storageUploadResponse.text();
+      throw new Error(`Failed to upload weight photo: ${storageUploadResponse.status} ${text}`);
     }
+
+    const attachments = (await storageUploadResponse.json()) as NocoAttachment[];
+    await nocodb.patch(`/tables/${tableId}/records`, {
+      Id: upserted.Id,
+      photo: attachments,
+    });
 
     return recordService.getWeightRecordByDate(date);
   },
