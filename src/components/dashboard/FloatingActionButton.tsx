@@ -28,20 +28,20 @@ export function FloatingActionButton() {
 
   const actions = useMemo<(LinkAction | ButtonAction)[]>(
     () => [
-      { kind: 'link', icon: <Coffee size={18} />, label: '早餐', href: '/record/food?type=breakfast', color: 'bg-amber-500' },
-      { kind: 'link', icon: <Utensils size={18} />, label: '午餐', href: '/record/food?type=lunch', color: 'bg-emerald-500' },
-      { kind: 'link', icon: <Utensils size={18} />, label: '晚餐', href: '/record/food?type=dinner', color: 'bg-cyan-600' },
-      { kind: 'link', icon: <Moon size={18} />, label: '加餐', href: '/record/food?type=snack', color: 'bg-sky-500' },
-      { kind: 'link', icon: <Dumbbell size={18} />, label: '运动', href: '/record/exercise', color: 'bg-rose-500' },
+      { kind: 'link', icon: <Coffee size={20} />, label: '早餐', href: '/record/food?type=breakfast', color: 'bg-orange-400' },
+      { kind: 'link', icon: <Utensils size={20} />, label: '午餐', href: '/record/food?type=lunch', color: 'bg-green-400' },
+      { kind: 'link', icon: <Utensils size={20} />, label: '晚餐', href: '/record/food?type=dinner', color: 'bg-blue-400' },
+      { kind: 'link', icon: <Moon size={20} />, label: '加餐', href: '/record/food?type=snack', color: 'bg-purple-400' },
+      { kind: 'link', icon: <Dumbbell size={20} />, label: '运动', href: '/record/exercise', color: 'bg-red-400' },
       {
         kind: 'button',
-        icon: <Droplet size={18} />,
+        icon: <Droplet size={20} />,
         label: '饮水 +250ml',
         color: 'bg-cyan-500',
         onClick: () => addWater(today, 250),
       },
-      { kind: 'link', icon: <Scale size={18} />, label: '体重', href: '/record/weight', color: 'bg-slate-600' },
-      { kind: 'link', icon: <Camera size={18} />, label: '体型照', href: '/record/photo', color: 'bg-teal-600' },
+      { kind: 'link', icon: <Scale size={20} />, label: '体重', href: '/record/weight', color: 'bg-slate-600' },
+      { kind: 'link', icon: <Camera size={20} />, label: '体型照', href: '/record/photo', color: 'bg-indigo-500' },
     ],
     [addWater, today]
   );
@@ -49,19 +49,19 @@ export function FloatingActionButton() {
   return (
     <div className="fixed bottom-24 right-6 z-50">
       {isOpen && (
-        <div className="absolute bottom-16 right-0 flex flex-col items-end gap-2.5">
+        <div className="absolute bottom-16 right-0 flex flex-col gap-3 items-end">
           {actions.map((action, index) => {
             if (action.kind === 'link') {
               return (
                 <Link
                   key={index}
                   href={action.href}
-                  className="group flex cursor-pointer items-center gap-2"
+                  className="flex items-center gap-2 group"
                   onClick={() => setIsOpen(false)}
                   aria-label={action.label}
                 >
-                  <span className="neo-card rounded-lg px-2.5 py-1.5 text-xs font-medium text-cyan-950">{action.label}</span>
-                  <div className={`${action.color} flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg transition-all duration-200 ease-out group-hover:-translate-y-0.5 group-focus-visible:ring-2 group-focus-visible:ring-cyan-400 motion-reduce:transition-none`}>
+                  <span className="bg-white px-2 py-1 rounded text-xs font-medium shadow-md text-gray-700">{action.label}</span>
+                  <div className={`${action.color} text-white p-3 rounded-full shadow-lg active:scale-90 transition-transform`}>
                     {action.icon}
                   </div>
                 </Link>
@@ -72,15 +72,15 @@ export function FloatingActionButton() {
               <button
                 key={index}
                 type="button"
-                className="group flex cursor-pointer items-center gap-2"
+                className="flex items-center gap-2 group"
                 onClick={async () => {
                   await action.onClick();
                   setIsOpen(false);
                 }}
                 aria-label={action.label}
               >
-                <span className="neo-card rounded-lg px-2.5 py-1.5 text-xs font-medium text-cyan-950">{action.label}</span>
-                <div className={`${action.color} flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg transition-all duration-200 ease-out group-hover:-translate-y-0.5 motion-reduce:transition-none`}>
+                <span className="bg-white px-2 py-1 rounded text-xs font-medium shadow-md text-gray-700">{action.label}</span>
+                <div className={`${action.color} text-white p-3 rounded-full shadow-lg active:scale-90 transition-transform`}>
                   {action.icon}
                 </div>
               </button>
@@ -90,9 +90,8 @@ export function FloatingActionButton() {
       )}
 
       <button
-        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`neo-card flex h-14 w-14 cursor-pointer items-center justify-center rounded-full border border-cyan-200 bg-cyan-600 text-white shadow-2xl transition-all duration-200 ease-out hover:bg-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 motion-reduce:transition-none ${isOpen ? 'rotate-45' : ''}`}
+        className={`bg-blue-600 text-white p-4 rounded-full shadow-2xl transition-transform active:scale-90 ${isOpen ? 'rotate-45' : ''}`}
         aria-label="快捷记录"
       >
         <Plus size={24} />
@@ -100,7 +99,7 @@ export function FloatingActionButton() {
 
       {isOpen && (
         <div
-          className="fixed inset-0 -z-10 bg-cyan-950/25 backdrop-blur-[1px]"
+          className="fixed inset-0 bg-black/20 -z-10"
           onClick={() => setIsOpen(false)}
         />
       )}

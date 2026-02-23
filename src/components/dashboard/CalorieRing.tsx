@@ -12,45 +12,46 @@ interface CalorieRingProps {
 export function CalorieRing({ target, consumed, burned }: CalorieRingProps) {
   const remaining = target - consumed + burned;
   const isOver = remaining < 0;
-
+  
+  // Data for the chart
   const data = [
     { name: 'Consumed', value: consumed },
     { name: 'Remaining', value: Math.max(0, remaining) },
   ];
 
-  const COLORS = ['#0891b2', '#d7eef2'];
+  const COLORS = ['#3b82f6', '#e5e7eb']; // Blue for consumed, light gray for remaining
   if (isOver) {
-    COLORS[0] = '#dc2626';
+    COLORS[0] = '#ef4444'; // Red if over limit
   }
 
   return (
-    <div className="relative h-44 w-full max-w-[180px]">
+    <div className="relative w-full h-64 flex items-center justify-center">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
             cx="50%"
             cy="50%"
-            innerRadius={52}
-            outerRadius={70}
-            paddingAngle={2}
+            innerRadius={80}
+            outerRadius={100}
+            paddingAngle={5}
             dataKey="value"
             startAngle={90}
             endAngle={-270}
           >
-            {data.map((_, index) => (
+            {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
             ))}
           </Pie>
         </PieChart>
       </ResponsiveContainer>
-
-      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="text-xs font-semibold uppercase tracking-wide text-cyan-900/70">剩余可吃</span>
-        <span className={`font-display text-3xl font-bold ${isOver ? 'text-red-600' : 'text-cyan-950'}`}>
+      
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+        <span className="text-sm text-gray-500 font-medium">剩余可吃</span>
+        <span className={`text-4xl font-bold ${isOver ? 'text-red-500' : 'text-gray-900'}`}>
           {Math.abs(remaining)}
         </span>
-        <span className="mt-0.5 text-[11px] font-medium text-cyan-900/60">kcal</span>
+        <span className="text-xs text-gray-400 mt-1">kcal</span>
       </div>
     </div>
   );

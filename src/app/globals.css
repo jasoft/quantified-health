@@ -1,50 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #e6fbff;
-  --foreground: #123647;
-  --surface: #f5feff;
-  --surface-strong: #ffffff;
-  --accent: #0891b2;
-  --accent-strong: #0f766e;
-  --shadow-soft: -8px -8px 22px #ffffff, 8px 8px 22px #cdeaf0;
-  --shadow-inset: inset -4px -4px 10px #ffffff, inset 4px 4px 10px #d2eaf0;
+  --background: #ffffff;
+  --foreground: #171717;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-barlow);
-  --font-display: var(--font-barlow-condensed);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
 }
 
 body {
-  background:
-    radial-gradient(120% 70% at 50% -10%, #d4f8ff 0%, rgba(212, 248, 255, 0) 60%),
-    linear-gradient(180deg, #e8fcff 0%, #f1fdff 28%, #f7feff 100%);
+  background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-barlow), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-}
-
-.font-display {
-  font-family: var(--font-barlow-condensed), var(--font-barlow), "PingFang SC", sans-serif;
-}
-
-.neo-card {
-  background: linear-gradient(145deg, #ffffff 0%, #f3fdff 100%);
-  box-shadow: var(--shadow-soft);
-}
-
-.neo-inset {
-  box-shadow: var(--shadow-inset);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
-  }
+  font-family: Arial, Helvetica, sans-serif;
 }
