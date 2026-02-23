@@ -115,7 +115,7 @@ export const recordService = {
       return recordService.getWeightRecordByDate(data.date);
     }
 
-    await nocodb.post(`/tables/${tableId}/records`, [{ date: data.date, ...data }]);
+    await nocodb.post(`/tables/${tableId}/records`, [data]);
     return recordService.getWeightRecordByDate(data.date);
   },
   clearWeightPhoto: async (date: string) => {

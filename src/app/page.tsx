@@ -108,100 +108,113 @@ export default function Home() {
   const dailyPhotoUrl = resolveAttachmentUrl(safeWeightRecordsByDate[selectedDate]?.photo?.[0]);
 
   const macroItems = [
-    { label: '蛋白质', current: consumedProtein, target: userTarget.target_protein, color: 'bg-blue-300' },
-    { label: '脂肪', current: consumedFat, target: userTarget.target_fat, color: 'bg-pink-300' },
-    { label: '碳水化合物', current: consumedCarbs, target: userTarget.target_carbs, color: 'bg-amber-300' },
+    { label: '蛋白质', current: consumedProtein, target: userTarget.target_protein, color: 'from-sky-400 to-sky-600' },
+    { label: '脂肪', current: consumedFat, target: userTarget.target_fat, color: 'from-rose-300 to-rose-500' },
+    { label: '碳水化合物', current: consumedCarbs, target: userTarget.target_carbs, color: 'from-amber-300 to-amber-500' },
   ];
 
   if (userLoading && !target) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="neo-card flex h-28 w-full max-w-xs items-center justify-center rounded-3xl border border-cyan-100/80">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-cyan-200 border-t-cyan-600" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-100 font-sans pb-32">
-      <section className="bg-sky-100 px-4 pt-4 pb-8 rounded-b-[28px]">
-        <div className="flex items-center justify-between mb-4">
-          <button
-            type="button"
-            onClick={() => {
-              setWeekStart((prev) => addWeeks(prev, -1));
-              setSelectedDate((prev) => format(addWeeks(parseISO(`${prev}T00:00:00`), -1), 'yyyy-MM-dd'));
-            }}
-            aria-label="上一周"
-            className="p-2 text-zinc-700"
-          >
-            <ChevronLeft size={22} />
-          </button>
-          <h1 className="text-2xl font-bold text-zinc-900">{dateLabel(selectedDateObj)}</h1>
-          <button
-            type="button"
-            onClick={() => {
-              setWeekStart((prev) => addWeeks(prev, 1));
-              setSelectedDate((prev) => format(addWeeks(parseISO(`${prev}T00:00:00`), 1), 'yyyy-MM-dd'));
-            }}
-            aria-label="下一周"
-            className="p-2 text-zinc-700"
-          >
-            <ChevronRight size={22} />
-          </button>
-        </div>
+    <div className="relative flex min-h-screen flex-col pb-36">
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-16 top-20 h-48 w-48 rounded-full bg-cyan-200/40 blur-3xl" />
+        <div className="absolute -right-16 top-48 h-56 w-56 rounded-full bg-teal-200/40 blur-3xl" />
+      </div>
 
-        <div className="grid grid-cols-7 gap-2 mb-3">
-          {WEEKDAY_LABELS.map((label) => (
-            <div key={label} className="text-center text-zinc-600 text-sm">
-              {label}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-2">
-          {weekDays.map((date, index) => {
-            const active = isSameDay(date, selectedDateObj);
-            return (
-              <button
-                key={date.toISOString()}
-                type="button"
-                onClick={() => setSelectedDate(format(date, 'yyyy-MM-dd'))}
-                className={`h-9 w-9 mx-auto rounded-full text-sm transition ${
-                  active ? 'bg-blue-300 text-zinc-900 font-bold' : 'text-zinc-600'
-                }`}
-                aria-label={`${WEEKDAY_LABELS[index]} ${format(date, 'd')}日`}
-              >
-                {format(date, 'd')}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-4 grid grid-cols-3 items-center">
-          <div className="text-center">
-            <p className="text-sm text-zinc-600">饮食摄入</p>
-            <p className="text-4xl font-bold text-zinc-900 leading-tight">{consumedCalories}</p>
+      <section className="mx-auto w-full max-w-xl px-4 pt-5">
+        <div className="neo-card rounded-[30px] border border-cyan-100/80 px-4 pb-5 pt-4 sm:px-5">
+          <div className="mb-4 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => {
+                setWeekStart((prev) => addWeeks(prev, -1));
+                setSelectedDate((prev) => format(addWeeks(parseISO(`${prev}T00:00:00`), -1), 'yyyy-MM-dd'));
+              }}
+              aria-label="上一周"
+              className="neo-card flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-cyan-100 text-cyan-900 transition-colors duration-200 hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <h1 className="font-display text-4xl font-bold leading-none text-cyan-950">{dateLabel(selectedDateObj)}</h1>
+            <button
+              type="button"
+              onClick={() => {
+                setWeekStart((prev) => addWeeks(prev, 1));
+                setSelectedDate((prev) => format(addWeeks(parseISO(`${prev}T00:00:00`), 1), 'yyyy-MM-dd'));
+              }}
+              aria-label="下一周"
+              className="neo-card flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-cyan-100 text-cyan-900 transition-colors duration-200 hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+            >
+              <ChevronRight size={20} />
+            </button>
           </div>
-          <CalorieRing target={userTarget.target_calories} consumed={consumedCalories} burned={burnedCalories} />
-          <div className="text-center">
-            <p className="text-sm text-zinc-600">运动消耗</p>
-            <p className="text-4xl font-bold text-zinc-900 leading-tight">{burnedCalories}</p>
+
+          <div className="mb-3 grid grid-cols-7 gap-2">
+            {WEEKDAY_LABELS.map((label) => (
+              <div key={label} className="text-center text-xs font-semibold tracking-wide text-cyan-800/70">
+                {label}
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-2">
+            {weekDays.map((date, index) => {
+              const active = isSameDay(date, selectedDateObj);
+              return (
+                <button
+                  key={date.toISOString()}
+                  type="button"
+                  onClick={() => setSelectedDate(format(date, 'yyyy-MM-dd'))}
+                  className={`mx-auto flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-sm font-semibold transition-all duration-200 ease-out motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
+                    active
+                      ? 'bg-cyan-600 text-white shadow-md shadow-cyan-200'
+                      : 'neo-card border border-cyan-100 text-cyan-900 hover:bg-cyan-50'
+                  }`}
+                  aria-label={`${WEEKDAY_LABELS[index]} ${format(date, 'd')}日`}
+                >
+                  {format(date, 'd')}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-3">
+            <div className="text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest text-cyan-800/70">饮食摄入</p>
+              <p className="font-display mt-1 text-4xl font-bold leading-none text-cyan-950">{consumedCalories}</p>
+              <p className="text-[11px] text-cyan-800/70">kcal</p>
+            </div>
+            <CalorieRing target={userTarget.target_calories} consumed={consumedCalories} burned={burnedCalories} />
+            <div className="text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest text-cyan-800/70">运动消耗</p>
+              <p className="font-display mt-1 text-4xl font-bold leading-none text-cyan-950">{burnedCalories}</p>
+              <p className="text-[11px] text-cyan-800/70">kcal</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <main className="px-4 py-4 space-y-4 max-w-md mx-auto w-full">
-        <section className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-4">
-          <div className="grid grid-cols-3 gap-4">
+      <main className="mx-auto w-full max-w-xl space-y-4 px-4 py-4">
+        <section className="neo-card rounded-3xl border border-cyan-100/80 p-4">
+          <div className="grid grid-cols-3 gap-3">
             {macroItems.map((item) => {
               const ratio = Math.min(100, (item.current / Math.max(1, item.target)) * 100);
               return (
-                <div key={item.label} className="space-y-2">
-                  <h3 className="text-sm font-semibold text-zinc-700">{item.label}</h3>
-                  <div className="h-2 rounded-full bg-zinc-100 overflow-hidden">
-                    <div className={`h-full ${item.color}`} style={{ width: `${ratio}%` }} />
+                <div key={item.label} className="space-y-2 rounded-2xl bg-white/75 p-3">
+                  <h3 className="text-xs font-semibold text-cyan-900">{item.label}</h3>
+                  <div className="h-2 overflow-hidden rounded-full bg-cyan-100">
+                    <div className={`h-full rounded-full bg-gradient-to-r ${item.color}`} style={{ width: `${ratio}%` }} />
                   </div>
-                  <p className="text-sm text-zinc-900 font-semibold">
-                    {Math.round(item.current)}/{Math.round(item.target)}克
+                  <p className="text-sm font-semibold text-cyan-950">
+                    {Math.round(item.current)}/{Math.round(item.target)}g
                   </p>
                 </div>
               );
@@ -213,70 +226,83 @@ export default function Home() {
           const mealFoods = groupedMeals[mealType];
           const mealCalories = mealFoods.reduce((sum, item) => sum + Number(item.calories), 0);
           const mealTarget = Math.round(userTarget.target_calories * MEAL_TARGET_RATIOS[mealType]);
-          const intakeText = mealFoods.length > 0 ? `已摄入${mealCalories}/${mealTarget}千卡` : '已摄入0千卡';
+          const intakeText = mealFoods.length > 0 ? `已摄入 ${mealCalories}/${mealTarget} 千卡` : `目标 ${mealTarget} 千卡`;
 
           return (
-            <section key={mealType} className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 space-y-4">
-              <div className="flex items-end gap-3">
-                <h2 className="text-4xl font-bold text-zinc-900 leading-none">{MEAL_LABELS[mealType]}</h2>
-                <p className="text-xl text-zinc-500">{intakeText}</p>
+            <section key={mealType} className="neo-card rounded-3xl border border-cyan-100/80 p-5">
+              <div className="mb-4 flex items-end justify-between gap-2">
+                <h2 className="font-display text-5xl font-bold leading-none text-cyan-950">{MEAL_LABELS[mealType]}</h2>
+                <p className="text-sm font-medium text-cyan-700">{intakeText}</p>
               </div>
 
               {mealFoods.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {mealFoods.map((food) => (
-                    <div key={`${food.name}-${food.Id ?? food.amount}`} className="flex justify-between gap-4">
-                      <div>
-                        <p className="text-4xl font-semibold text-zinc-900 leading-tight">{food.name}</p>
-                        <p className="text-2xl text-zinc-500 mt-1">{Math.round(food.amount)}克</p>
+                    <div key={`${food.name}-${food.Id ?? food.amount}`} className="neo-inset rounded-2xl bg-white/80 px-4 py-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-2xl font-semibold leading-tight text-cyan-950">{food.name}</p>
+                          <p className="mt-1 text-sm text-cyan-700">{Math.round(food.amount)} 克</p>
+                        </div>
+                        <p className="font-display whitespace-nowrap text-3xl font-bold leading-none text-cyan-900">
+                          {Math.round(food.calories)}
+                          <span className="ml-1 text-sm font-semibold text-cyan-700">kcal</span>
+                        </p>
                       </div>
-                      <p className="text-4xl font-semibold text-zinc-900 whitespace-nowrap">{Math.round(food.calories)}千卡</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-zinc-400 text-sm">当前餐次暂无记录</p>
+                <div className="rounded-2xl border border-dashed border-cyan-200 bg-white/70 px-4 py-5 text-sm text-cyan-700">
+                  当前餐次暂无记录
+                </div>
               )}
             </section>
           );
         })}
 
-        <section className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5">
-          <div className="flex items-end gap-3">
-            <h2 className="text-4xl font-bold text-zinc-900 leading-none">运动</h2>
-            <p className="text-xl text-zinc-500">已消耗{burnedCalories}千卡</p>
+        <section className="neo-card rounded-3xl border border-cyan-100/80 p-5">
+          <div className="flex items-end justify-between gap-2">
+            <h2 className="font-display text-5xl font-bold leading-none text-cyan-950">运动</h2>
+            <p className="text-sm font-medium text-cyan-700">已消耗 {burnedCalories} 千卡</p>
           </div>
         </section>
 
-        <section className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-4xl font-bold text-zinc-900 leading-none">体型照</h2>
-            <Link href="/record/photo" className="text-sm text-blue-600 font-semibold inline-flex items-center gap-1">
+        <section className="neo-card rounded-3xl border border-cyan-100/80 p-5">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="font-display text-5xl font-bold leading-none text-cyan-950">体型照</h2>
+            <Link
+              href="/record/photo"
+              className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border border-cyan-200 px-3 py-2 text-sm font-semibold text-cyan-700 transition-colors duration-200 hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+            >
               <Camera size={16} />
               {dailyPhotoUrl ? '重新上传' : '去记录'}
             </Link>
           </div>
-          <div className="h-52 rounded-xl border border-zinc-200 bg-zinc-100 overflow-hidden flex items-center justify-center">
+
+          <div className="relative h-56 overflow-hidden rounded-2xl border border-cyan-200 bg-cyan-50">
             {dailyPhotoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={dailyPhotoUrl} alt="体型照" className="w-full h-full object-cover" />
+              <img src={dailyPhotoUrl} alt={`${selectedDate}体型照`} className="h-full w-full object-cover" />
             ) : (
-              <p className="text-zinc-400 text-sm">当日暂无体型照</p>
+              <div className="flex h-full items-center justify-center text-sm text-cyan-700/75">当日暂无体型照</div>
             )}
           </div>
+
           <button
             type="button"
             disabled={!dailyPhotoUrl || isLoading}
             onClick={() => void removeWeightPhoto(selectedDate)}
-            className="w-full py-2.5 rounded-xl border border-zinc-200 text-zinc-600 disabled:opacity-50"
+            className="mt-4 min-h-[44px] w-full cursor-pointer rounded-xl border border-cyan-200 px-4 py-2.5 text-sm font-semibold text-cyan-700 transition-colors duration-200 hover:bg-cyan-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
           >
             移除
           </button>
-          {error ? <p className="text-sm text-red-500">{error}</p> : null}
+
+          {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
         </section>
 
         <section>
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 px-1">水分补给</h2>
+          <h2 className="mb-3 px-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-800/70">水分补给</h2>
           <WaterTracker current={currentWater} target={userTarget.target_water} onAdd={(amount) => addWater(selectedDate, amount)} />
         </section>
       </main>
