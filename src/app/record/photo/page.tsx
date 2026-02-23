@@ -20,11 +20,11 @@ export default function PhotoRecordPage() {
   const today = new Date().toISOString().split('T')[0];
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const { dailyRecordsByDate, fetchDailyRecordByDate, saveDailyPhoto, removeDailyPhoto, isLoading } = useRecordStore();
+  const { weightRecordsByDate, fetchWeightRecordByDate, saveWeightPhoto, removeWeightPhoto, isLoading, error } = useRecordStore();
 
   useEffect(() => {
-    void fetchDailyRecordByDate(today);
-  }, [fetchDailyRecordByDate, today]);
+    void fetchWeightRecordByDate(today);
+  }, [fetchWeightRecordByDate, today]);
 
   useEffect(() => {
     return () => {
@@ -35,8 +35,8 @@ export default function PhotoRecordPage() {
   }, [previewUrl]);
 
   const currentPhotoUrl = useMemo(
-    () => resolveAttachmentUrl(dailyRecordsByDate[today]?.photo?.[0]),
-    [dailyRecordsByDate, today]
+    () => resolveAttachmentUrl(weightRecordsByDate[today]?.photo?.[0]),
+    [weightRecordsByDate, today]
   );
 
   const displayPhoto = previewUrl ?? currentPhotoUrl;
@@ -51,16 +51,24 @@ export default function PhotoRecordPage() {
 
   const onSave = async () => {
     if (!selectedFile) return;
-    await saveDailyPhoto(today, selectedFile);
-    router.push('/');
+    try {
+      await saveWeightPhoto(today, selectedFile);
+      router.push('/');
+    } catch {
+      // Error state is surfaced from store; keep user on current page.
+    }
   };
 
   const onRemove = async () => {
-    await removeDailyPhoto(today);
-    setSelectedFile(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
+    try {
+      await removeWeightPhoto(today);
+      setSelectedFile(null);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+      }
+    } catch {
+      // Error state is surfaced from store; keep UI state unchanged.
     }
   };
 
@@ -75,6 +83,7 @@ export default function PhotoRecordPage() {
 
       <main className="p-4 max-w-md mx-auto w-full space-y-4">
         <p className="text-sm text-zinc-500">上传今日体型照，默认仅保留最新一张。</p>
+        {error ? <p className="text-sm text-red-500">{error}</p> : null}
 
         <section className="bg-white p-4 rounded-2xl border border-zinc-100 shadow-sm space-y-4">
           <div className="rounded-xl overflow-hidden border border-zinc-200 bg-zinc-100 h-72 flex items-center justify-center">

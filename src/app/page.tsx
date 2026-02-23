@@ -51,12 +51,13 @@ export default function Home() {
     foodRecords,
     waterIntake,
     exerciseCalories,
-    dailyRecordsByDate,
+    weightRecordsByDate,
     fetchRecordsForDate,
-    fetchDailyRecordByDate,
+    fetchWeightRecordByDate,
     addWater,
-    removeDailyPhoto,
+    removeWeightPhoto,
     isLoading,
+    error,
   } = useRecordStore();
 
   useEffect(() => {
@@ -65,8 +66,8 @@ export default function Home() {
 
   useEffect(() => {
     void fetchRecordsForDate(selectedDate);
-    void fetchDailyRecordByDate(selectedDate);
-  }, [fetchDailyRecordByDate, fetchRecordsForDate, selectedDate]);
+    void fetchWeightRecordByDate(selectedDate);
+  }, [fetchWeightRecordByDate, fetchRecordsForDate, selectedDate]);
 
   const userTarget = target || {
     target_calories: 2000,
@@ -103,7 +104,7 @@ export default function Home() {
   const consumedFat = foodRecords.reduce((sum, item) => sum + Number(item.fat), 0);
   const burnedCalories = exerciseCalories[selectedDate] || 0;
   const currentWater = waterIntake[selectedDate] || 0;
-  const dailyPhotoUrl = resolveAttachmentUrl(dailyRecordsByDate[selectedDate]?.photo?.[0]);
+  const dailyPhotoUrl = resolveAttachmentUrl(weightRecordsByDate[selectedDate]?.photo?.[0]);
 
   const macroItems = [
     { label: '蛋白质', current: consumedProtein, target: userTarget.target_protein, color: 'bg-blue-300' },
@@ -264,11 +265,12 @@ export default function Home() {
           <button
             type="button"
             disabled={!dailyPhotoUrl || isLoading}
-            onClick={() => void removeDailyPhoto(selectedDate)}
+            onClick={() => void removeWeightPhoto(selectedDate)}
             className="w-full py-2.5 rounded-xl border border-zinc-200 text-zinc-600 disabled:opacity-50"
           >
             移除
           </button>
+          {error ? <p className="text-sm text-red-500">{error}</p> : null}
         </section>
 
         <section>

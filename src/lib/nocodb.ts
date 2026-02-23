@@ -25,6 +25,14 @@ const nocodbMeta = axios.create({
   },
 });
 
+const nocodbMetaV3 = axios.create({
+  baseURL: `${NOCODB_URL}/api/v3/meta`,
+  headers: {
+    'xc-token': NOCODB_TOKEN,
+    'Content-Type': 'application/json',
+  },
+});
+
 let cachedBaseId: string | null = null;
 const tableIdCache = new Map<string, string>();
 const fieldIdCache = new Map<string, string>();
@@ -70,8 +78,8 @@ export async function resolveFieldIdByTitle(tableTitle: string, fieldTitle: stri
 
   const baseId = await resolveBaseIdByTitle();
   const tableId = await resolveTableIdByTitle(tableTitle);
-  const response = await nocodbMeta.get(`/projects/${baseId}/tables/${tableId}`);
-  const fields = (response.data.fields ?? response.data.columns ?? []) as Array<{
+  const response = await nocodbMetaV3.get(`/bases/${baseId}/tables/${tableId}`);
+  const fields = (response.data.fields ?? []) as Array<{
     id: string;
     title?: string;
     column_name?: string;

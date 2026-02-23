@@ -4,7 +4,6 @@ const FOOD_TABLE = 'FoodRecords';
 const WATER_TABLE = 'WaterRecords';
 const EXERCISE_TABLE = 'ExerciseRecords';
 const WEIGHT_TABLE = 'WeightRecords';
-const DAILY_TABLE = 'DailyRecords';
 
 export interface FoodRecord {
   Id?: number;
@@ -33,7 +32,8 @@ export interface ExerciseRecord {
 export interface WeightRecord {
   Id?: number;
   date: string;
-  weight: number;
+  weight?: number;
+  photo?: NocoAttachment[];
 }
 
 export interface NocoAttachment {
@@ -43,12 +43,6 @@ export interface NocoAttachment {
   path?: string;
   mimetype?: string;
   size?: number;
-}
-
-export interface DailyRecord {
-  Id?: number;
-  date: string;
-  photo?: NocoAttachment[];
 }
 
 export const recordService = {
@@ -99,55 +93,53 @@ export const recordService = {
     });
     return response.data.list as WeightRecord[];
   },
+  getWeightRecordByDate: async (date: string) => {
+    const tableId = await resolveTableIdByTitle(WEIGHT_TABLE);
+    const response = await nocodb.get(`/tables/${tableId}/records`, {
+      params: { where: `(date,eq,${date})`, limit: 1 },
+    });
+    return (response.data.list?.[0] as WeightRecord | undefined) ?? null;
+  },
   addWeightRecord: async (data: WeightRecord) => {
     const tableId = await resolveTableIdByTitle(WEIGHT_TABLE);
     return nocodb.post(`/tables/${tableId}/records`, [data]);
   },
-
-  // Daily Records
-  getDailyRecordByDate: async (date: string) => {
-    const tableId = await resolveTableIdByTitle(DAILY_TABLE);
-    const response = await nocodb.get(`/tables/${tableId}/records`, {
-      params: { where: `(date,eq,${date})`, limit: 1 },
-    });
-    return (response.data.list?.[0] as DailyRecord | undefined) ?? null;
-  },
-  upsertDailyRecord: async (data: DailyRecord) => {
-    const tableId = await resolveTableIdByTitle(DAILY_TABLE);
-    const existing = await recordService.getDailyRecordByDate(data.date);
+  upsertWeightRecord: async (data: WeightRecord) => {
+    const tableId = await resolveTableIdByTitle(WEIGHT_TABLE);
+    const existing = await recordService.getWeightRecordByDate(data.date);
 
     if (existing?.Id) {
       await nocodb.patch(`/tables/${tableId}/records`, { Id: existing.Id, ...data });
-      return recordService.getDailyRecordByDate(data.date);
+      return recordService.getWeightRecordByDate(data.date);
     }
 
-    await nocodb.post(`/tables/${tableId}/records`, [{ ...data }]);
-    return recordService.getDailyRecordByDate(data.date);
+    await nocodb.post(`/tables/${tableId}/records`, [{ date: data.date, ...data }]);
+    return recordService.getWeightRecordByDate(data.date);
   },
-  clearDailyPhoto: async (date: string) => {
-    const tableId = await resolveTableIdByTitle(DAILY_TABLE);
-    const existing = await recordService.getDailyRecordByDate(date);
+  clearWeightPhoto: async (date: string) => {
+    const tableId = await resolveTableIdByTitle(WEIGHT_TABLE);
+    const existing = await recordService.getWeightRecordByDate(date);
     if (!existing?.Id) return null;
 
     await nocodb.patch(`/tables/${tableId}/records`, { Id: existing.Id, photo: [] });
-    return recordService.getDailyRecordByDate(date);
+    return recordService.getWeightRecordByDate(date);
   },
-  uploadDailyPhoto: async (date: string, file: File) => {
+  uploadWeightPhoto: async (date: string, file: File) => {
     if (!NOCODB_TOKEN) {
       throw new Error('Missing NEXT_PUBLIC_NOCODB_API_TOKEN');
     }
 
-    const upserted = await recordService.upsertDailyRecord({ date, photo: [] });
+    const upserted = await recordService.upsertWeightRecord({ date });
     if (!upserted?.Id) {
-      throw new Error('Failed to create daily record before photo upload');
+      throw new Error('Failed to create weight record before photo upload');
     }
 
     // Keep latest only by clearing old attachment first.
-    await recordService.clearDailyPhoto(date);
+    await recordService.clearWeightPhoto(date);
 
     const baseId = await resolveBaseIdByTitle();
-    const tableId = await resolveTableIdByTitle(DAILY_TABLE);
-    const fieldId = await resolveFieldIdByTitle(DAILY_TABLE, 'photo');
+    const tableId = await resolveTableIdByTitle(WEIGHT_TABLE);
+    const fieldId = await resolveFieldIdByTitle(WEIGHT_TABLE, 'photo');
     const formData = new FormData();
     formData.append('file', file);
 
@@ -164,9 +156,9 @@ export const recordService = {
 
     if (!uploadResponse.ok) {
       const text = await uploadResponse.text();
-      throw new Error(`Failed to upload daily photo: ${uploadResponse.status} ${text}`);
+      throw new Error(`Failed to upload weight photo: ${uploadResponse.status} ${text}`);
     }
 
-    return recordService.getDailyRecordByDate(date);
+    return recordService.getWeightRecordByDate(date);
   },
 };

@@ -1,23 +1,23 @@
 import { create } from 'zustand';
-import { DailyRecord, FoodRecord, WeightRecord, recordService } from '@/services/recordService';
+import { FoodRecord, WeightRecord, recordService } from '@/services/recordService';
 
 interface RecordState {
   foodRecords: FoodRecord[];
   waterIntake: Record<string, number>; // date -> ml
   exerciseCalories: Record<string, number>; // date -> calories
   weightRecords: WeightRecord[];
-  dailyRecordsByDate: Record<string, DailyRecord | null>;
+  weightRecordsByDate: Record<string, WeightRecord | null>;
   isLoading: boolean;
   error: string | null;
   fetchRecordsForDate: (date: string) => Promise<void>;
-  fetchDailyRecordByDate: (date: string) => Promise<void>;
+  fetchWeightRecordByDate: (date: string) => Promise<void>;
   fetchWeightHistory: (days: number) => Promise<void>;
   addFoodRecord: (record: FoodRecord) => Promise<void>;
   addWater: (date: string, amount: number) => Promise<void>;
   setExercise: (date: string, calories: number) => Promise<void>;
   addWeight: (date: string, weight: number) => Promise<void>;
-  saveDailyPhoto: (date: string, file: File) => Promise<void>;
-  removeDailyPhoto: (date: string) => Promise<void>;
+  saveWeightPhoto: (date: string, file: File) => Promise<void>;
+  removeWeightPhoto: (date: string) => Promise<void>;
   copyMealFromPreviousDay: (mealType: string, date: string) => Promise<number>;
 }
 
@@ -32,7 +32,7 @@ export const useRecordStore = create<RecordState>((set, get) => ({
   waterIntake: {},
   exerciseCalories: {},
   weightRecords: [],
-  dailyRecordsByDate: {},
+  weightRecordsByDate: {},
   isLoading: false,
   error: null,
 
@@ -68,7 +68,7 @@ export const useRecordStore = create<RecordState>((set, get) => ({
       const threshold = thresholdDate.toISOString().split('T')[0];
 
       const filtered = records
-        .filter((record) => record.date >= threshold)
+        .filter((record) => record.date >= threshold && Number.isFinite(Number(record.weight)) && Number(record.weight) > 0)
         .sort((a, b) => a.date.localeCompare(b.date));
 
       set({ weightRecords: filtered, isLoading: false });
@@ -77,16 +77,16 @@ export const useRecordStore = create<RecordState>((set, get) => ({
     }
   },
 
-  fetchDailyRecordByDate: async (date: string) => {
+  fetchWeightRecordByDate: async (date: string) => {
     set({ isLoading: true, error: null });
     try {
-      const record = await recordService.getDailyRecordByDate(date);
+      const record = await recordService.getWeightRecordByDate(date);
       set((state) => ({
-        dailyRecordsByDate: { ...state.dailyRecordsByDate, [date]: record },
+        weightRecordsByDate: { ...state.weightRecordsByDate, [date]: record },
         isLoading: false,
       }));
     } catch {
-      set({ error: 'Failed to fetch daily record', isLoading: false });
+      set({ error: 'Failed to fetch weight record', isLoading: false });
     }
   },
 
@@ -123,36 +123,41 @@ export const useRecordStore = create<RecordState>((set, get) => ({
   addWeight: async (date: string, weight: number) => {
     set({ isLoading: true, error: null });
     try {
-      await recordService.addWeightRecord({ date, weight });
+      await recordService.upsertWeightRecord({ date, weight });
+      await get().fetchWeightRecordByDate(date);
       await get().fetchWeightHistory(90);
     } catch {
       set({ error: 'Failed to update weight', isLoading: false });
     }
   },
 
-  saveDailyPhoto: async (date: string, file: File) => {
+  saveWeightPhoto: async (date: string, file: File) => {
     set({ isLoading: true, error: null });
     try {
-      const record = await recordService.uploadDailyPhoto(date, file);
+      const record = await recordService.uploadWeightPhoto(date, file);
       set((state) => ({
-        dailyRecordsByDate: { ...state.dailyRecordsByDate, [date]: record },
+        weightRecordsByDate: { ...state.weightRecordsByDate, [date]: record },
         isLoading: false,
       }));
-    } catch {
-      set({ error: 'Failed to upload daily photo', isLoading: false });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to upload weight photo';
+      set({ error: message, isLoading: false });
+      throw error;
     }
   },
 
-  removeDailyPhoto: async (date: string) => {
+  removeWeightPhoto: async (date: string) => {
     set({ isLoading: true, error: null });
     try {
-      const record = await recordService.clearDailyPhoto(date);
+      const record = await recordService.clearWeightPhoto(date);
       set((state) => ({
-        dailyRecordsByDate: { ...state.dailyRecordsByDate, [date]: record },
+        weightRecordsByDate: { ...state.weightRecordsByDate, [date]: record },
         isLoading: false,
       }));
-    } catch {
-      set({ error: 'Failed to remove daily photo', isLoading: false });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to remove weight photo';
+      set({ error: message, isLoading: false });
+      throw error;
     }
   },
 

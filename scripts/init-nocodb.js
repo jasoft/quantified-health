@@ -54,6 +54,30 @@ async function createTable(baseId, tableName, columns) {
   console.log(`Table ${tableName} created.`);
 }
 
+async function ensureField(baseId, tableName, field) {
+  const tablesData = await request(`/api/v1/db/meta/projects/${baseId}/tables`);
+  const tables = tablesData.list || tablesData;
+  const table = tables.find(t => t.table_name === tableName || t.title === tableName);
+  if (!table?.id) {
+    throw new Error(`Table ${tableName} not found when ensuring field ${field.title}`);
+  }
+
+  const tableMeta = await request(`/api/v3/meta/bases/${baseId}/tables/${table.id}`);
+  const fields = tableMeta.fields || [];
+  const exists = fields.some((item) => (item.title || '').toLowerCase() === field.title.toLowerCase());
+  if (exists) {
+    console.log(`Field ${field.title} already exists on ${tableName}.`);
+    return;
+  }
+
+  console.log(`Creating field ${field.title} on ${tableName}...`);
+  await request(`/api/v3/meta/bases/${baseId}/tables/${table.id}/fields`, {
+    method: 'POST',
+    body: JSON.stringify(field),
+  });
+  console.log(`Field ${field.title} created on ${tableName}.`);
+}
+
 async function init() {
   try {
     const basesData = await request('/api/v1/db/meta/projects');
@@ -118,12 +142,11 @@ async function init() {
       { column_name: 'date', title: 'date', uidt: 'SingleLineText' },
       { column_name: 'weight', title: 'weight', uidt: 'Number' }
     ]);
-
-    // DailyRecords Table
-    await createTable(baseId, 'DailyRecords', [
-      { column_name: 'date', title: 'date', uidt: 'SingleLineText' },
-      { column_name: 'photo', title: 'photo', uidt: 'Attachment' }
-    ]);
+    await ensureField(baseId, 'WeightRecords', {
+      column_name: 'photo',
+      title: 'photo',
+      type: 'Attachment',
+    });
 
     console.log('NocoDB Initialization Complete!');
   } catch (err) {
