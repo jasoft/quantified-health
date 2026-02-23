@@ -18,7 +18,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     try {
       const target = await userService.getUserTarget();
       set({ target, isLoading: false });
-    } catch (error) {
+    } catch {
       set({ error: 'Failed to fetch user targets', isLoading: false });
     }
   },
@@ -42,7 +42,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       // Re-fetch to get the assigned ID if it was a new record
       const savedTarget = await userService.getUserTarget();
       set({ target: savedTarget || newTarget, isLoading: false });
-    } catch (error) {
+    } catch {
       set({ error: 'Failed to update user targets', isLoading: false });
     }
   }

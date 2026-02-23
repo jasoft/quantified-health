@@ -1,7 +1,6 @@
-import { nocodb } from '@/lib/nocodb';
+import { nocodb, resolveTableIdByTitle } from '@/lib/nocodb';
 
-// 假设 NocoDB 中表名为 'users'
-const TABLE_ID = process.env.NEXT_PUBLIC_USERS_TABLE_ID || 'Users';
+const TABLE_TITLE = 'Users';
 
 export interface UserTarget {
   Id?: number;
@@ -15,14 +14,17 @@ export interface UserTarget {
 
 export const userService = {
   getUserTarget: async () => {
-    // 获取第一个配置（假设单用户应用）
-    const response = await nocodb.get(`/${TABLE_ID}/records?limit=1`);
+    const tableId = await resolveTableIdByTitle(TABLE_TITLE);
+    const response = await nocodb.get(`/tables/${tableId}/records`, { params: { limit: 1 } });
     return response.data.list[0] || null;
   },
   saveUserTarget: async (data: UserTarget) => {
+    const tableId = await resolveTableIdByTitle(TABLE_TITLE);
+
     if (data.Id) {
-      return await nocodb.patch(`/${TABLE_ID}/records`, { ...data });
+      return nocodb.patch(`/tables/${tableId}/records`, { ...data });
     }
-    return await nocodb.post(`/${TABLE_ID}/records`, [data]);
-  }
+
+    return nocodb.post(`/tables/${tableId}/records`, [data]);
+  },
 };

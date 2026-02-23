@@ -5,9 +5,23 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, Save, Calculator } from 'lucide-react';
 import { useUserStore } from '@/store/useUserStore';
 
+type DeficitRatio = 0.2 | 0.3;
+
+function buildTargetsFromTdee(tdee: number, deficitRatio: DeficitRatio) {
+  const targetCalories = Math.round(tdee * (1 - deficitRatio));
+  return {
+    target_calories: String(targetCalories),
+    target_carbs: String(Math.round((targetCalories * 0.45) / 4)),
+    target_protein: String(Math.round((targetCalories * 0.3) / 4)),
+    target_fat: String(Math.round((targetCalories * 0.25) / 9)),
+  };
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const { target, fetchTarget, updateTarget, isLoading } = useUserStore();
+  const [calculatedTdee, setCalculatedTdee] = useState(2000);
+  const [deficitRatio, setDeficitRatio] = useState<DeficitRatio>(0.2);
 
   const [formData, setFormData] = useState({
     weight: '70',
@@ -28,26 +42,47 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (target) {
-      setFormData({
-        weight: '70', // Weight not in schema but needed for calculation
-        height: '175',
-        age: '25',
-        gender: 'male',
-        activity: '1.2',
-        target_calories: String(target.target_calories),
-        target_carbs: String(target.target_carbs),
-        target_protein: String(target.target_protein),
-        target_fat: String(target.target_fat),
-        target_water: String(target.target_water)
+      const frame = window.requestAnimationFrame(() => {
+        const tdee = Number(target.tdee || target.target_calories || 2000);
+        const inferredDeficit = tdee > 0 ? 1 - Number(target.target_calories) / tdee : 0;
+        const nextDeficit: DeficitRatio = inferredDeficit >= 0.25 ? 0.3 : 0.2;
+
+        setCalculatedTdee(tdee);
+        setDeficitRatio(nextDeficit);
+        setFormData({
+          weight: '70', // Weight not in schema but needed for calculation
+          height: '175',
+          age: '25',
+          gender: 'male',
+          activity: '1.2',
+          target_calories: String(target.target_calories),
+          target_carbs: String(target.target_carbs),
+          target_protein: String(target.target_protein),
+          target_fat: String(target.target_fat),
+          target_water: String(target.target_water)
+        });
       });
+      return () => window.cancelAnimationFrame(frame);
     }
   }, [target]);
+
+  const applyDeficitTargets = (tdee: number, ratio: DeficitRatio) => {
+    setCalculatedTdee(tdee);
+    setFormData((prev) => ({
+      ...prev,
+      ...buildTargetsFromTdee(tdee, ratio),
+    }));
+  };
 
   const calculateTDEE = () => {
     const w = parseFloat(formData.weight);
     const h = parseFloat(formData.height);
     const a = parseFloat(formData.age);
     const activity = parseFloat(formData.activity);
+
+    if (![w, h, a, activity].every((value) => Number.isFinite(value) && value > 0)) {
+      return;
+    }
     
     let bmr = 0;
     if (formData.gender === 'male') {
@@ -57,20 +92,17 @@ export default function ProfilePage() {
     }
     
     const tdee = Math.round(bmr * activity);
-    
-    // Auto fill targets based on TDEE (Moderate carb/high protein split)
-    setFormData({
-      ...formData,
-      target_calories: String(tdee),
-      target_carbs: String(Math.round((tdee * 0.45) / 4)),
-      target_protein: String(Math.round((tdee * 0.30) / 4)),
-      target_fat: String(Math.round((tdee * 0.25) / 9))
-    });
+    applyDeficitTargets(tdee, deficitRatio);
+  };
+
+  const handleDeficitChange = (ratio: DeficitRatio) => {
+    setDeficitRatio(ratio);
+    applyDeficitTargets(calculatedTdee, ratio);
   };
 
   const handleSave = async () => {
     await updateTarget({
-      tdee: parseInt(formData.target_calories),
+      tdee: calculatedTdee,
       target_calories: parseInt(formData.target_calories),
       target_carbs: parseInt(formData.target_carbs),
       target_protein: parseInt(formData.target_protein),
@@ -150,6 +182,47 @@ export default function ProfilePage() {
             </select>
           </div>
 
+          <div>
+            <label className="text-xs text-zinc-400">热量缺口</label>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <label
+                htmlFor="deficit-20"
+                className={`p-3 rounded-lg border text-sm font-medium flex items-center justify-center gap-2 cursor-pointer ${
+                  deficitRatio === 0.2 ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-zinc-200 bg-white'
+                }`}
+              >
+                <input
+                  id="deficit-20"
+                  type="radio"
+                  name="deficit"
+                  className="sr-only"
+                  checked={deficitRatio === 0.2}
+                  onChange={() => handleDeficitChange(0.2)}
+                  aria-label="20% 缺口"
+                />
+                20% 缺口
+              </label>
+              <label
+                htmlFor="deficit-30"
+                className={`p-3 rounded-lg border text-sm font-medium flex items-center justify-center gap-2 cursor-pointer ${
+                  deficitRatio === 0.3 ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-zinc-200 bg-white'
+                }`}
+              >
+                <input
+                  id="deficit-30"
+                  type="radio"
+                  name="deficit"
+                  className="sr-only"
+                  checked={deficitRatio === 0.3}
+                  onChange={() => handleDeficitChange(0.3)}
+                  aria-label="30% 缺口"
+                />
+                30% 缺口
+              </label>
+            </div>
+            <p className="text-xs text-zinc-500 mt-2">当前按 TDEE {calculatedTdee} kcal 计算目标摄入。</p>
+          </div>
+
           <button 
             onClick={calculateTDEE}
             className="w-full py-2 bg-blue-50 text-blue-600 font-bold rounded-lg border border-blue-100 active:scale-95 transition-transform"
@@ -169,6 +242,7 @@ export default function ProfilePage() {
                 type="number" 
                 value={formData.target_calories}
                 onChange={(e) => setFormData({...formData, target_calories: e.target.value})}
+                aria-label="总热量 (kcal)"
                 className="w-full p-3 bg-zinc-50 border-2 border-blue-100 rounded-xl text-lg font-bold"
               />
             </div>

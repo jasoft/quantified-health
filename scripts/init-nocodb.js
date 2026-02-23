@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');
 
 // Simple dot env parser
@@ -59,18 +60,23 @@ async function init() {
     const bases = basesData.list || basesData;
     
     let baseId;
-    if (bases && bases.length > 0) {
-      const base = bases.find(b => b.title === 'keepfit') || bases[0];
-      baseId = base.id;
+    const keepfitBase = (bases || []).find(b => b.title === 'keepfit');
+
+    if (keepfitBase) {
+      baseId = keepfitBase.id;
     } else {
-      console.log('No bases found. Creating keepfit...');
+      console.log("Base 'keepfit' not found. Creating keepfit...");
       const newBaseData = await request('/api/v1/db/meta/projects', {
         method: 'POST',
         body: JSON.stringify({ title: 'keepfit' })
       });
       baseId = newBaseData.id;
     }
-    
+
+    if (!baseId) {
+      throw new Error('Failed to resolve keepfit base ID');
+    }
+
     console.log('Using Base ID:', baseId);
     
     // Users Table
@@ -105,6 +111,18 @@ async function init() {
     await createTable(baseId, 'ExerciseRecords', [
       { column_name: 'date', title: 'date', uidt: 'SingleLineText' },
       { column_name: 'calories', title: 'calories', uidt: 'Number' }
+    ]);
+
+    // WeightRecords Table
+    await createTable(baseId, 'WeightRecords', [
+      { column_name: 'date', title: 'date', uidt: 'SingleLineText' },
+      { column_name: 'weight', title: 'weight', uidt: 'Number' }
+    ]);
+
+    // DailyRecords Table
+    await createTable(baseId, 'DailyRecords', [
+      { column_name: 'date', title: 'date', uidt: 'SingleLineText' },
+      { column_name: 'photo', title: 'photo', uidt: 'Attachment' }
     ]);
 
     console.log('NocoDB Initialization Complete!');
