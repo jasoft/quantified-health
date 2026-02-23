@@ -5,7 +5,7 @@ const envFile = fs.readFileSync('.env.local', 'utf8');
 const env = {};
 envFile.split('\n').forEach(line => {
   const [key, ...val] = line.split('=');
-  if (key && val) {
+  if (key && val.length > 0) {
     env[key.trim()] = val.join('=').trim();
   }
 });
@@ -23,9 +23,34 @@ async function request(path, options = {}) {
     }
   });
   if (!res.ok) {
-    throw new Error(`Error ${res.status}: ${await res.text()}`);
+    const text = await res.text();
+    console.error(`Error ${res.status} on ${path}: ${text}`);
+    throw new Error(`Error ${res.status}: ${text}`);
   }
   return res.json();
+}
+
+async function createTable(baseId, tableName, columns) {
+  console.log(`Checking table ${tableName}...`);
+  const tablesData = await request(`/api/v1/db/meta/projects/${baseId}/tables`);
+  const tables = tablesData.list || tablesData;
+  const existingTable = tables.find(t => t.table_name === tableName || t.title === tableName);
+  
+  if (existingTable) {
+    console.log(`Table ${tableName} already exists.`);
+    return;
+  }
+  
+  console.log(`Creating ${tableName} table...`);
+  await request(`/api/v1/db/meta/projects/${baseId}/tables`, {
+    method: 'POST',
+    body: JSON.stringify({
+      table_name: tableName,
+      title: tableName,
+      columns: columns
+    })
+  });
+  console.log(`Table ${tableName} created.`);
 }
 
 async function init() {
@@ -38,7 +63,7 @@ async function init() {
       const base = bases.find(b => b.title === 'keepfit') || bases[0];
       baseId = base.id;
     } else {
-      console.log('No bases found. Attempting to create one...');
+      console.log('No bases found. Creating keepfit...');
       const newBaseData = await request('/api/v1/db/meta/projects', {
         method: 'POST',
         body: JSON.stringify({ title: 'keepfit' })
@@ -48,32 +73,41 @@ async function init() {
     
     console.log('Using Base ID:', baseId);
     
-    const tablesData = await request(`/api/v1/db/meta/projects/${baseId}/tables`);
-    const tables = tablesData.list || tablesData;
-    const usersTable = tables.find(t => t.table_name === 'Users' || t.title === 'Users');
-    
-    if (usersTable) {
-      console.log('Users table already exists.');
-      return;
-    }
-    
-    console.log('Creating Users table...');
-    const createData = await request(`/api/v1/db/meta/projects/${baseId}/tables`, {
-      method: 'POST',
-      body: JSON.stringify({
-        table_name: 'Users',
-        title: 'Users',
-        columns: [
-          { column_name: 'tdee', title: 'tdee', uidt: 'Number' },
-          { column_name: 'target_calories', title: 'target_calories', uidt: 'Number' },
-          { column_name: 'target_carbs', title: 'target_carbs', uidt: 'Number' },
-          { column_name: 'target_protein', title: 'target_protein', uidt: 'Number' },
-          { column_name: 'target_fat', title: 'target_fat', uidt: 'Number' },
-          { column_name: 'target_water', title: 'target_water', uidt: 'Number' }
-        ]
-      })
-    });
-    console.log('Table created:', createData.id);
+    // Users Table
+    await createTable(baseId, 'Users', [
+      { column_name: 'tdee', title: 'tdee', uidt: 'Number' },
+      { column_name: 'target_calories', title: 'target_calories', uidt: 'Number' },
+      { column_name: 'target_carbs', title: 'target_carbs', uidt: 'Number' },
+      { column_name: 'target_protein', title: 'target_protein', uidt: 'Number' },
+      { column_name: 'target_fat', title: 'target_fat', uidt: 'Number' },
+      { column_name: 'target_water', title: 'target_water', uidt: 'Number' }
+    ]);
+
+    // FoodRecords Table
+    await createTable(baseId, 'FoodRecords', [
+      { column_name: 'date', title: 'date', uidt: 'SingleLineText' },
+      { column_name: 'mealType', title: 'mealType', uidt: 'SingleLineText' },
+      { column_name: 'name', title: 'name', uidt: 'SingleLineText' },
+      { column_name: 'amount', title: 'amount', uidt: 'Number' },
+      { column_name: 'calories', title: 'calories', uidt: 'Number' },
+      { column_name: 'carbs', title: 'carbs', uidt: 'Number' },
+      { column_name: 'protein', title: 'protein', uidt: 'Number' },
+      { column_name: 'fat', title: 'fat', uidt: 'Number' }
+    ]);
+
+    // WaterRecords Table
+    await createTable(baseId, 'WaterRecords', [
+      { column_name: 'date', title: 'date', uidt: 'SingleLineText' },
+      { column_name: 'amount', title: 'amount', uidt: 'Number' }
+    ]);
+
+    // ExerciseRecords Table
+    await createTable(baseId, 'ExerciseRecords', [
+      { column_name: 'date', title: 'date', uidt: 'SingleLineText' },
+      { column_name: 'calories', title: 'calories', uidt: 'Number' }
+    ]);
+
+    console.log('NocoDB Initialization Complete!');
   } catch (err) {
     console.error('Init NocoDB failed:', err.message);
   }
