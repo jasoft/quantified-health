@@ -218,8 +218,8 @@ export default function Home() {
           return (
             <section key={mealType} className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 space-y-4">
               <div className="flex items-end gap-3">
-                <h2 className="text-4xl font-bold text-zinc-900 leading-none">{MEAL_LABELS[mealType]}</h2>
-                <p className="text-xl text-zinc-500">{intakeText}</p>
+                <h2 className="text-2xl font-bold text-zinc-900 leading-none">{MEAL_LABELS[mealType]}</h2>
+                <p className="text-base text-zinc-500">{intakeText}</p>
               </div>
 
               {mealFoods.length > 0 ? (
@@ -227,10 +227,10 @@ export default function Home() {
                   {mealFoods.map((food) => (
                     <div key={`${food.name}-${food.Id ?? food.amount}`} className="flex justify-between gap-4">
                       <div>
-                        <p className="text-4xl font-semibold text-zinc-900 leading-tight">{food.name}</p>
-                        <p className="text-2xl text-zinc-500 mt-1">{Math.round(food.amount)}克</p>
+                        <p className="text-2xl font-semibold text-zinc-900 leading-tight">{food.name}</p>
+                        <p className="text-base text-zinc-500 mt-1">{Math.round(food.amount)}克</p>
                       </div>
-                      <p className="text-4xl font-semibold text-zinc-900 whitespace-nowrap">{Math.round(food.calories)}千卡</p>
+                      <p className="text-2xl font-semibold text-zinc-900 whitespace-nowrap">{Math.round(food.calories)}千卡</p>
                     </div>
                   ))}
                 </div>
@@ -243,14 +243,14 @@ export default function Home() {
 
         <section className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5">
           <div className="flex items-end gap-3">
-            <h2 className="text-4xl font-bold text-zinc-900 leading-none">运动</h2>
-            <p className="text-xl text-zinc-500">已消耗{burnedCalories}千卡</p>
+            <h2 className="text-2xl font-bold text-zinc-900 leading-none">运动</h2>
+            <p className="text-base text-zinc-500">已消耗{burnedCalories}千卡</p>
           </div>
         </section>
 
         <section className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-4xl font-bold text-zinc-900 leading-none">体型照</h2>
+            <h2 className="text-2xl font-bold text-zinc-900 leading-none">体型照</h2>
             <Link href="/record/photo" className="text-sm text-blue-600 font-semibold inline-flex items-center gap-1">
               <Camera size={16} />
               {dailyPhotoUrl ? '重新上传' : '去记录'}
