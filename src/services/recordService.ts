@@ -1,6 +1,7 @@
 import { NOCODB_TOKEN, NOCODB_URL, nocodb, resolveTableIdByTitle } from '@/lib/nocodb';
 
 const FOOD_TABLE = 'FoodRecords';
+const FOOD_LIBRARY_TABLE = 'FoodLibrary';
 const WATER_TABLE = 'WaterRecords';
 const EXERCISE_TABLE = 'ExerciseRecords';
 const WEIGHT_TABLE = 'WeightRecords';
@@ -21,6 +22,18 @@ export interface WaterRecord {
   Id?: number;
   date: string;
   amount: number;
+}
+
+export interface FoodLibraryItem {
+  Id?: number;
+  name: string;
+  calories: number;
+  carbs: number;
+  protein: number;
+  fat: number;
+  unit?: string;
+  category?: string;
+  source?: string;
 }
 
 export interface ExerciseRecord {
@@ -48,6 +61,35 @@ export interface NocoAttachment {
 }
 
 export const recordService = {
+  getFoodLibraryItems: async () => {
+    const tableId = await resolveTableIdByTitle(FOOD_LIBRARY_TABLE);
+    const list: FoodLibraryItem[] = [];
+    const limit = 200;
+    let offset = 0;
+
+    while (true) {
+      const response = await nocodb.get(`/tables/${tableId}/records`, {
+        params: { limit, offset, sort: 'name' },
+      });
+      const page = (response.data.list ?? []) as FoodLibraryItem[];
+
+      list.push(
+        ...page.map((item) => ({
+          ...item,
+          calories: Number(item.calories ?? 0),
+          carbs: Number(item.carbs ?? 0),
+          protein: Number(item.protein ?? 0),
+          fat: Number(item.fat ?? 0),
+        }))
+      );
+
+      if (page.length < limit) break;
+      offset += limit;
+    }
+
+    return list;
+  },
+
   // Food Records
   getFoodRecordsByDate: async (date: string) => {
     const tableId = await resolveTableIdByTitle(FOOD_TABLE);
@@ -115,7 +157,7 @@ export const recordService = {
       return recordService.getWeightRecordByDate(data.date);
     }
 
-    await nocodb.post(`/tables/${tableId}/records`, [{ date: data.date, ...data }]);
+    await nocodb.post(`/tables/${tableId}/records`, [{ ...data }]);
     return recordService.getWeightRecordByDate(data.date);
   },
   clearWeightPhoto: async (date: string) => {

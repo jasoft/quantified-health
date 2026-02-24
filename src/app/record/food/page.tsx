@@ -1,10 +1,10 @@
 'use client';
 
-import React, { Suspense, useMemo, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ChevronRight, Copy, Loader2, Plus, Search } from 'lucide-react';
 import { useRecordStore } from '@/store/useRecordStore';
-import { FoodRecord } from '@/services/recordService';
+import { FoodRecord, recordService } from '@/services/recordService';
 import { AmountInput } from '@/components/record/AmountInput';
 
 interface FoodItem {
@@ -18,15 +18,6 @@ interface FoodItem {
 
 const CUSTOM_FOOD_KEY = 'qh_custom_foods';
 
-const MOCK_FOODS: FoodItem[] = [
-  { name: '鸡蛋', calories: 143, carbs: 1.1, protein: 12.6, fat: 9.5, unit: '100g' },
-  { name: '鸡胸肉', calories: 165, carbs: 0, protein: 31, fat: 3.6, unit: '100g' },
-  { name: '米饭', calories: 116, carbs: 25.9, protein: 2.6, fat: 0.3, unit: '100g' },
-  { name: '全麦面包', calories: 247, carbs: 41, protein: 13, fat: 3.4, unit: '100g' },
-  { name: '西兰花', calories: 34, carbs: 7, protein: 2.8, fat: 0.4, unit: '100g' },
-  { name: '牛排', calories: 250, carbs: 0, protein: 26, fat: 15, unit: '100g' },
-];
-
 function FoodRecordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -37,6 +28,9 @@ function FoodRecordContent() {
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [amount, setAmount] = useState('100');
   const [showCustomModal, setShowCustomModal] = useState(false);
+  const [libraryFoods, setLibraryFoods] = useState<FoodItem[]>([]);
+  const [libraryLoading, setLibraryLoading] = useState(true);
+  const [libraryError, setLibraryError] = useState('');
   const [customFoods, setCustomFoods] = useState<FoodItem[]>(() => {
     if (typeof window === 'undefined') return [];
     try {
@@ -58,7 +52,43 @@ function FoodRecordContent() {
 
   const { addFoodRecord, copyMealFromPreviousDay, isLoading } = useRecordStore();
 
-  const allFoods = useMemo(() => [...MOCK_FOODS, ...customFoods], [customFoods]);
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadLibrary = async () => {
+      setLibraryLoading(true);
+      setLibraryError('');
+      try {
+        const items = await recordService.getFoodLibraryItems();
+        if (cancelled) return;
+        const mapped = items
+          .filter((item) => item.name && Number.isFinite(item.calories))
+          .map((item) => ({
+            name: item.name,
+            calories: Number(item.calories),
+            carbs: Number(item.carbs),
+            protein: Number(item.protein),
+            fat: Number(item.fat),
+            unit: item.unit || '100g',
+          }));
+        setLibraryFoods(mapped);
+      } catch {
+        if (!cancelled) {
+          setLibraryError('食物库加载失败，请稍后重试');
+          setLibraryFoods([]);
+        }
+      } finally {
+        if (!cancelled) setLibraryLoading(false);
+      }
+    };
+
+    void loadLibrary();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const allFoods = useMemo(() => [...libraryFoods, ...customFoods], [libraryFoods, customFoods]);
 
   const results = useMemo(() => {
     if (query.trim() === '') return allFoods;
@@ -137,6 +167,7 @@ function FoodRecordContent() {
         ) : null}
 
         {copyStatus ? <p className="text-xs text-zinc-500 px-1">{copyStatus}</p> : null}
+        {libraryError ? <p className="text-xs text-red-500 px-1">{libraryError}</p> : null}
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
@@ -163,6 +194,12 @@ function FoodRecordContent() {
             </div>
 
             <div className="bg-white rounded-xl border border-zinc-100 overflow-hidden shadow-sm">
+              {libraryLoading ? (
+                <div className="p-4 text-sm text-zinc-500 flex items-center gap-2">
+                  <Loader2 size={16} className="animate-spin" />
+                  正在加载食物库...
+                </div>
+              ) : null}
               {results.length > 0 ? results.map((food, index) => (
                 <button
                   key={`${food.name}-${index}`}

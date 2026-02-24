@@ -73,6 +73,12 @@ test("custom food form should include macros fields", async ({ page }) => {
   await expect(page.getByPlaceholder("脂肪 (每 100g)")).toBeVisible();
 });
 
+test("food page should load items from FoodLibrary table", async ({ page }) => {
+  await page.goto("/record/food?type=breakfast");
+  await page.getByPlaceholder("搜索食物...").fill("豆浆");
+  await expect(page.locator("p", { hasText: "豆浆" }).first()).toBeVisible();
+});
+
 test("profile should support 20% and 30% calorie deficits", async ({ page }) => {
   await page.goto("/profile");
 
