@@ -177,21 +177,21 @@ export default function Home() {
           })}
         </div>
 
-        <div className="mt-4 grid grid-cols-3 items-center">
+        <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-1">
           <div className="text-center">
             <p className="text-sm text-zinc-600">饮食摄入</p>
-            <p className="text-4xl font-bold text-zinc-900 leading-tight">{consumedCalories}</p>
+            <p className="text-4xl font-semibold text-zinc-900 leading-[1.05]">{consumedCalories}</p>
           </div>
           <CalorieRing target={userTarget.target_calories} consumed={consumedCalories} burned={burnedCalories} />
           <div className="text-center">
             <p className="text-sm text-zinc-600">运动消耗</p>
-            <p className="text-4xl font-bold text-zinc-900 leading-tight">{burnedCalories}</p>
+            <p className="text-4xl font-semibold text-zinc-900 leading-[1.05]">{burnedCalories}</p>
           </div>
         </div>
       </section>
 
       <main className="px-4 py-4 space-y-4 max-w-md mx-auto w-full">
-        <section className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-4">
+        <section className="bg-zinc-50 rounded-2xl border border-zinc-100 shadow-sm p-4">
           <div className="grid grid-cols-3 gap-4">
             {macroItems.map((item) => {
               const ratio = Math.min(100, (item.current / Math.max(1, item.target)) * 100);
@@ -217,21 +217,21 @@ export default function Home() {
           const intakeText = mealFoods.length > 0 ? `已摄入${mealCalories}/${mealTarget}千卡` : '已摄入0千卡';
 
           return (
-            <section key={mealType} className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 space-y-4">
-              <div className="flex items-end gap-3">
-                <h2 className="text-2xl font-bold text-zinc-900 leading-none">{MEAL_LABELS[mealType]}</h2>
-                <p className="text-base text-zinc-500">{intakeText}</p>
+            <section key={mealType} className="bg-zinc-50 rounded-2xl border border-zinc-100 shadow-sm p-4 space-y-3">
+              <div className="flex items-end gap-2.5">
+                <h2 className="text-2xl font-semibold text-zinc-900 leading-none">{MEAL_LABELS[mealType]}</h2>
+                <p className="text-sm text-zinc-500 leading-tight">{intakeText}</p>
               </div>
 
               {mealFoods.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {mealFoods.map((food) => (
                     <div key={`${food.name}-${food.Id ?? food.amount}`} className="flex justify-between gap-4">
                       <div>
-                        <p className="text-2xl font-semibold text-zinc-900 leading-tight">{food.name}</p>
-                        <p className="text-base text-zinc-500 mt-1">{Math.round(food.amount)}克</p>
+                        <p className="text-xl font-medium text-zinc-900 leading-tight">{food.name}</p>
+                        <p className="text-sm text-zinc-500 mt-1">{Math.round(food.amount)}克</p>
                       </div>
-                      <p className="text-2xl font-semibold text-zinc-900 whitespace-nowrap">{Math.round(food.calories)}千卡</p>
+                      <p className="text-2xl font-medium text-zinc-900 whitespace-nowrap leading-tight">{Math.round(food.calories)}千卡</p>
                     </div>
                   ))}
                 </div>
@@ -242,18 +242,18 @@ export default function Home() {
           );
         })}
 
-        <section className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5">
+        <section className="bg-zinc-50 rounded-2xl border border-zinc-100 shadow-sm p-4">
           <div className="flex items-end gap-3">
-            <h2 className="text-2xl font-bold text-zinc-900 leading-none">运动</h2>
-            <p className="text-base text-zinc-500">已消耗{burnedCalories}千卡</p>
+            <h2 className="text-xl font-semibold text-zinc-900 leading-none">运动</h2>
+            <p className="text-sm text-zinc-500">已消耗{burnedCalories}千卡</p>
           </div>
         </section>
 
         <WeightTrendSection title="体重趋势" />
 
-        <section className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 space-y-4">
+        <section className="bg-zinc-50 rounded-2xl border border-zinc-100 shadow-sm p-4 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-zinc-900 leading-none">体型照</h2>
+            <h2 className="text-xl font-semibold text-zinc-900 leading-none">体型照</h2>
             <Link href="/record/photo" className="text-sm text-blue-600 font-semibold inline-flex items-center gap-1">
               <Camera size={16} />
               {dailyPhotoUrl ? '重新上传' : '去记录'}
