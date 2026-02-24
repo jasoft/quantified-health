@@ -7,6 +7,7 @@ import { Camera, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CalorieRing } from '@/components/dashboard/CalorieRing';
 import { FloatingActionButton } from '@/components/dashboard/FloatingActionButton';
 import { WaterTracker } from '@/components/dashboard/WaterTracker';
+import { WeightTrendSection } from '@/components/weight/WeightTrendSection';
 import { NOCODB_URL } from '@/lib/nocodb';
 import { NocoAttachment } from '@/services/recordService';
 import { useRecordStore } from '@/store/useRecordStore';
@@ -247,6 +248,8 @@ export default function Home() {
             <p className="text-base text-zinc-500">已消耗{burnedCalories}千卡</p>
           </div>
         </section>
+
+        <WeightTrendSection title="体重趋势" />
 
         <section className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 space-y-4">
           <div className="flex items-center justify-between">
