@@ -13,6 +13,8 @@ interface RecordState {
   fetchWeightRecordByDate: (date: string) => Promise<void>;
   fetchWeightHistory: (days: number) => Promise<void>;
   addFoodRecord: (record: FoodRecord) => Promise<void>;
+  updateFoodRecord: (record: FoodRecord) => Promise<void>;
+  deleteFoodRecord: (recordId: number, date: string) => Promise<void>;
   addWater: (date: string, amount: number) => Promise<void>;
   setExercise: (date: string, calories: number) => Promise<void>;
   addWeight: (date: string, weight: number) => Promise<void>;
@@ -97,6 +99,28 @@ export const useRecordStore = create<RecordState>((set, get) => ({
       await get().fetchRecordsForDate(record.date);
     } catch {
       set({ error: 'Failed to add food record', isLoading: false });
+    }
+  },
+
+  updateFoodRecord: async (record: FoodRecord) => {
+    set({ isLoading: true, error: null });
+    try {
+      await recordService.updateFoodRecord(record);
+      await get().fetchRecordsForDate(record.date);
+    } catch {
+      set({ error: 'Failed to update food record', isLoading: false });
+      throw new Error('Failed to update food record');
+    }
+  },
+
+  deleteFoodRecord: async (recordId: number, date: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await recordService.deleteFoodRecord(recordId);
+      await get().fetchRecordsForDate(date);
+    } catch {
+      set({ error: 'Failed to delete food record', isLoading: false });
+      throw new Error('Failed to delete food record');
     }
   },
 

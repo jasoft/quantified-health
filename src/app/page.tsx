@@ -3,31 +3,38 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { addDays, addWeeks, format, isSameDay, isToday, parseISO, startOfWeek } from 'date-fns';
-import { Camera, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Camera, ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Trash2, X } from 'lucide-react';
 import { CalorieRing } from '@/components/dashboard/CalorieRing';
 import { FloatingActionButton } from '@/components/dashboard/FloatingActionButton';
 import { WaterTracker } from '@/components/dashboard/WaterTracker';
 import { WeightTrendSection } from '@/components/weight/WeightTrendSection';
 import { NOCODB_URL } from '@/lib/nocodb';
-import { NocoAttachment } from '@/services/recordService';
+import { FoodRecord, NocoAttachment } from '@/services/recordService';
 import { useRecordStore } from '@/store/useRecordStore';
 import { useUserStore } from '@/store/useUserStore';
 
 const WEEKDAY_LABELS = ['一', '二', '三', '四', '五', '六', '日'];
 
 const MEAL_ORDER = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
-const MEAL_LABELS: Record<(typeof MEAL_ORDER)[number], string> = {
+type MealType = (typeof MEAL_ORDER)[number];
+const MEAL_LABELS: Record<MealType, string> = {
   breakfast: '早餐',
   lunch: '午餐',
   dinner: '晚餐',
   snack: '加餐',
 };
-const MEAL_TARGET_RATIOS: Record<(typeof MEAL_ORDER)[number], number> = {
+const MEAL_TARGET_RATIOS: Record<MealType, number> = {
   breakfast: 0.25,
   lunch: 0.35,
   dinner: 0.3,
   snack: 0.1,
 };
+
+function scaleNutrient(value: number, fromAmount: number, toAmount: number): number {
+  const safeFromAmount = fromAmount > 0 ? fromAmount : 0;
+  if (safeFromAmount === 0) return Number(value);
+  return Math.round(((Number(value) / safeFromAmount) * toAmount) * 10) / 10;
+}
 
 function resolveAttachmentUrl(photo?: NocoAttachment): string | null {
   if (!photo) return null;
@@ -46,6 +53,11 @@ export default function Home() {
   const today = format(new Date(), 'yyyy-MM-dd');
   const [selectedDate, setSelectedDate] = useState(today);
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [openMealMenu, setOpenMealMenu] = useState<MealType | null>(null);
+  const [editingMealType, setEditingMealType] = useState<MealType | null>(null);
+  const [editingFood, setEditingFood] = useState<FoodRecord | null>(null);
+  const [editingAmount, setEditingAmount] = useState('');
+  const [foodActionError, setFoodActionError] = useState<string | null>(null);
 
   const { target, fetchTarget, isLoading: userLoading } = useUserStore();
   const {
@@ -57,6 +69,8 @@ export default function Home() {
     fetchWeightRecordByDate,
     addWater,
     removeWeightPhoto,
+    updateFoodRecord,
+    deleteFoodRecord,
     isLoading,
     error,
   } = useRecordStore();
@@ -88,7 +102,7 @@ export default function Home() {
       lunch: [],
       dinner: [],
       snack: [],
-    } as Record<(typeof MEAL_ORDER)[number], typeof foodRecords>;
+    } as Record<MealType, FoodRecord[]>;
 
     for (const record of foodRecords) {
       if (record.mealType in grouped) {
@@ -114,6 +128,72 @@ export default function Home() {
     { label: '碳水化合物', current: consumedCarbs, target: userTarget.target_carbs, color: 'bg-amber-300' },
   ];
 
+  const selectDate = (nextDate: string) => {
+    setSelectedDate(nextDate);
+    setOpenMealMenu(null);
+    setEditingMealType(null);
+    setEditingFood(null);
+    setFoodActionError(null);
+  };
+
+  const openEditModal = (food: FoodRecord) => {
+    if (!food.Id) {
+      setFoodActionError('该记录缺少 Id，无法修改');
+      return;
+    }
+    setFoodActionError(null);
+    setEditingFood(food);
+    setEditingAmount(String(Math.round(Number(food.amount))));
+    setOpenMealMenu(null);
+  };
+
+  const handleDeleteFood = async (food: FoodRecord) => {
+    if (!food.Id) {
+      setFoodActionError('该记录缺少 Id，无法删除');
+      return;
+    }
+    const confirmed = window.confirm(`确认删除“${food.name}”吗？`);
+    if (!confirmed) return;
+
+    setFoodActionError(null);
+    try {
+      await deleteFoodRecord(food.Id, selectedDate);
+    } catch {
+      setFoodActionError('删除失败，请稍后重试');
+    }
+  };
+
+  const handleSubmitFoodEdit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingFood?.Id) {
+      setFoodActionError('该记录缺少 Id，无法修改');
+      return;
+    }
+
+    const nextAmount = Number(editingAmount);
+    if (!Number.isFinite(nextAmount) || nextAmount <= 0) {
+      setFoodActionError('请输入大于 0 的克数');
+      return;
+    }
+
+    const updatedRecord: FoodRecord = {
+      ...editingFood,
+      amount: nextAmount,
+      calories: scaleNutrient(editingFood.calories, Number(editingFood.amount), nextAmount),
+      carbs: scaleNutrient(editingFood.carbs, Number(editingFood.amount), nextAmount),
+      protein: scaleNutrient(editingFood.protein, Number(editingFood.amount), nextAmount),
+      fat: scaleNutrient(editingFood.fat, Number(editingFood.amount), nextAmount),
+    };
+
+    setFoodActionError(null);
+    try {
+      await updateFoodRecord(updatedRecord);
+      setEditingFood(null);
+    } catch {
+      setFoodActionError('修改失败，请稍后重试');
+    }
+  };
+
   if (userLoading && !target) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans">
@@ -130,7 +210,7 @@ export default function Home() {
             type="button"
             onClick={() => {
               setWeekStart((prev) => addWeeks(prev, -1));
-              setSelectedDate((prev) => format(addWeeks(parseISO(`${prev}T00:00:00`), -1), 'yyyy-MM-dd'));
+              selectDate(format(addWeeks(parseISO(`${selectedDate}T00:00:00`), -1), 'yyyy-MM-dd'));
             }}
             aria-label="上一周"
             className="p-2 text-zinc-700"
@@ -142,7 +222,7 @@ export default function Home() {
             type="button"
             onClick={() => {
               setWeekStart((prev) => addWeeks(prev, 1));
-              setSelectedDate((prev) => format(addWeeks(parseISO(`${prev}T00:00:00`), 1), 'yyyy-MM-dd'));
+              selectDate(format(addWeeks(parseISO(`${selectedDate}T00:00:00`), 1), 'yyyy-MM-dd'));
             }}
             aria-label="下一周"
             className="p-2 text-zinc-700"
@@ -165,7 +245,7 @@ export default function Home() {
               <button
                 key={date.toISOString()}
                 type="button"
-                onClick={() => setSelectedDate(format(date, 'yyyy-MM-dd'))}
+                onClick={() => selectDate(format(date, 'yyyy-MM-dd'))}
                 className={`h-9 w-9 mx-auto rounded-full text-sm transition ${
                   active ? 'bg-blue-300 text-zinc-900 font-bold' : 'text-zinc-600'
                 }`}
@@ -215,23 +295,79 @@ export default function Home() {
           const mealCalories = mealFoods.reduce((sum, item) => sum + Number(item.calories), 0);
           const mealTarget = Math.round(userTarget.target_calories * MEAL_TARGET_RATIOS[mealType]);
           const intakeText = mealFoods.length > 0 ? `已摄入${mealCalories}/${mealTarget}千卡` : '已摄入0千卡';
+          const isEditingThisMeal = editingMealType === mealType;
 
           return (
             <section key={mealType} className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5 space-y-4">
-              <div className="flex items-end gap-3">
-                <h2 className="text-2xl font-bold text-zinc-900 leading-none">{MEAL_LABELS[mealType]}</h2>
-                <p className="text-base text-zinc-500">{intakeText}</p>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-end gap-3">
+                  <h2 className="text-2xl font-bold text-zinc-900 leading-none">{MEAL_LABELS[mealType]}</h2>
+                  <p className="text-base text-zinc-500">{intakeText}</p>
+                </div>
+                <div className="relative">
+                  <button
+                    type="button"
+                    aria-label={`编辑${MEAL_LABELS[mealType]}`}
+                    onClick={() => setOpenMealMenu((prev) => prev === mealType ? null : mealType)}
+                    className="h-8 w-8 rounded-full border border-zinc-200 text-zinc-500 flex items-center justify-center"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                  {openMealMenu === mealType ? (
+                    <div className="absolute right-0 mt-2 min-w-28 rounded-xl border border-zinc-200 bg-white shadow-lg z-10 p-1">
+                      {mealFoods.length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingMealType((prev) => prev === mealType ? null : mealType);
+                            setOpenMealMenu(null);
+                            setFoodActionError(null);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 rounded-lg"
+                        >
+                          {isEditingThisMeal ? '完成编辑' : '编辑记录'}
+                        </button>
+                      ) : (
+                        <p className="px-3 py-2 text-sm text-zinc-400">暂无记录可编辑</p>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
               </div>
 
               {mealFoods.length > 0 ? (
                 <div className="space-y-4">
                   {mealFoods.map((food) => (
-                    <div key={`${food.name}-${food.Id ?? food.amount}`} className="flex justify-between gap-4">
+                    <div key={`${food.name}-${food.Id ?? food.amount}`} className="flex justify-between items-start gap-4">
                       <div>
                         <p className="text-2xl font-semibold text-zinc-900 leading-tight">{food.name}</p>
                         <p className="text-base text-zinc-500 mt-1">{Math.round(food.amount)}克</p>
                       </div>
-                      <p className="text-2xl font-semibold text-zinc-900 whitespace-nowrap">{Math.round(food.calories)}千卡</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-2xl font-semibold text-zinc-900 whitespace-nowrap">{Math.round(food.calories)}千卡</p>
+                        {isEditingThisMeal ? (
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              aria-label={`修改${food.name}`}
+                              disabled={isLoading || !food.Id}
+                              onClick={() => openEditModal(food)}
+                              className="h-8 w-8 rounded-full border border-zinc-200 text-zinc-600 flex items-center justify-center disabled:opacity-40"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              aria-label={`删除${food.name}`}
+                              disabled={isLoading || !food.Id}
+                              onClick={() => void handleDeleteFood(food)}
+                              className="h-8 w-8 rounded-full border border-zinc-200 text-red-500 flex items-center justify-center disabled:opacity-40"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -241,6 +377,7 @@ export default function Home() {
             </section>
           );
         })}
+        {foodActionError ? <p className="text-sm text-red-500 px-1">{foodActionError}</p> : null}
 
         <section className="bg-white rounded-2xl border border-zinc-100 shadow-sm p-5">
           <div className="flex items-end gap-3">
@@ -285,6 +422,58 @@ export default function Home() {
       </main>
 
       <FloatingActionButton />
+
+      {editingFood ? (
+        <div className="fixed inset-0 bg-black/35 z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white border border-zinc-200 p-5 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900">修改饮食记录</h3>
+                <p className="text-sm text-zinc-500">{editingFood.name}</p>
+              </div>
+              <button
+                type="button"
+                aria-label="关闭修改弹窗"
+                className="h-8 w-8 rounded-full border border-zinc-200 text-zinc-500 flex items-center justify-center"
+                onClick={() => setEditingFood(null)}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form className="space-y-4" onSubmit={(event) => void handleSubmitFoodEdit(event)}>
+              <label className="block space-y-2">
+                <span className="text-sm text-zinc-600">克数</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={editingAmount}
+                  onChange={(event) => setEditingAmount(event.target.value)}
+                  className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-zinc-900"
+                />
+              </label>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingFood(null)}
+                  className="py-2.5 rounded-xl border border-zinc-200 text-zinc-600"
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="py-2.5 rounded-xl bg-blue-500 text-white font-semibold disabled:opacity-50"
+                >
+                  保存
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

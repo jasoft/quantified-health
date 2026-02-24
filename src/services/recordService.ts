@@ -102,6 +102,17 @@ export const recordService = {
     const tableId = await resolveTableIdByTitle(FOOD_TABLE);
     return nocodb.post(`/tables/${tableId}/records`, [data]);
   },
+  updateFoodRecord: async (data: FoodRecord) => {
+    if (!data.Id) {
+      throw new Error('Missing food record Id');
+    }
+    const tableId = await resolveTableIdByTitle(FOOD_TABLE);
+    return nocodb.patch(`/tables/${tableId}/records`, data);
+  },
+  deleteFoodRecord: async (recordId: number) => {
+    const tableId = await resolveTableIdByTitle(FOOD_TABLE);
+    return nocodb.delete(`/tables/${tableId}/records/${recordId}`);
+  },
 
   // Water Records
   getWaterRecordsByDate: async (date: string) => {

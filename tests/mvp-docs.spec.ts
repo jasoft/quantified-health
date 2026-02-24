@@ -15,6 +15,14 @@ test("home should show meal record sections", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "加餐", exact: true })).toBeVisible();
 });
 
+test("home should show edit menu button on each meal card", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "编辑早餐" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "编辑午餐" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "编辑晚餐" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "编辑加餐" })).toBeVisible();
+});
+
 test("photo record page should be accessible", async ({ page }) => {
   await page.goto("/record/photo");
   await expect(page.getByRole("heading", { name: "体型照记录" })).toBeVisible();
