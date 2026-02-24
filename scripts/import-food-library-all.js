@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');
 const path = require('path');
 
 const REPO_ROOT = '/Users/weiwang/Projects/keepfit';
-const ENV_PATH = path.join(REPO_ROOT, 'quantified-health/.env.local');
+const ENV_PATH = path.join(REPO_ROOT, '.env.local');
 const DATA_DIR = path.join(
   REPO_ROOT,
   '.codex/china-food-composition-data/json_data_vision_251206_Qwen2-5-VL-72B-Instruct'
