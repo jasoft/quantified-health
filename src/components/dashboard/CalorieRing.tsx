@@ -49,13 +49,14 @@ export function CalorieRing({ target, consumed, burned }: CalorieRingProps) {
       </PieChart>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider mb-0.5">还可以吃</span>
-        <span className={`text-4xl font-bold tracking-tight leading-none ${isOver ? 'text-red-500' : 'text-zinc-900'}`}>
-          {Math.abs(remaining)}
+        <span className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider mb-0.5">
+          {isOver ? '已超出' : '还可以吃'}
         </span>
-        <div className="mt-1.5 flex flex-col items-center">
-          <span className="text-[10px] text-zinc-400 font-medium leading-none uppercase tracking-tighter">Budget</span>
-          <span className="text-xs text-zinc-500 font-semibold">{target} kcal</span>
+        <div className="flex flex-col items-center -space-y-1">
+          <span className={`text-5xl font-bold tracking-tighter ${isOver ? 'text-red-500' : 'text-zinc-900'}`}>
+            {Math.abs(remaining)}
+          </span>
+          <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest pt-1">kcal</span>
         </div>
       </div>
     </div>

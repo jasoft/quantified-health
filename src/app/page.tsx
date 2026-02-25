@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { addDays, addWeeks, format, isSameDay, isToday, parseISO, startOfWeek } from 'date-fns';
-import { Camera, ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Trash2, X } from 'lucide-react';
+import { Camera, ChevronLeft, ChevronRight, Coffee, Dumbbell, Moon, MoreHorizontal, Pencil, Trash2, Utensils, X } from 'lucide-react';
 import { CalorieRing } from '@/components/dashboard/CalorieRing';
 import { FloatingActionButton } from '@/components/dashboard/FloatingActionButton';
 import { WaterTracker } from '@/components/dashboard/WaterTracker';
@@ -29,6 +29,13 @@ const MEAL_TARGET_RATIOS: Record<MealType, number> = {
   lunch: 0.35,
   dinner: 0.3,
   snack: 0.1,
+};
+
+const MEAL_META: Record<MealType, { icon: React.ElementType; bg: string; color: string }> = {
+  breakfast: { icon: Coffee, bg: 'bg-orange-50', color: 'text-orange-500' },
+  lunch: { icon: Utensils, bg: 'bg-green-50', color: 'text-green-500' },
+  dinner: { icon: Utensils, bg: 'bg-blue-50', color: 'text-blue-500' },
+  snack: { icon: Moon, bg: 'bg-purple-50', color: 'text-purple-500' },
 };
 
 function scaleNutrient(value: number, fromAmount: number, toAmount: number): number {
@@ -300,15 +307,21 @@ export default function Home() {
           const mealCalories = mealFoods.reduce((sum, item) => sum + Number(item.calories), 0);
           const mealTarget = Math.round(userTarget.target_calories * MEAL_TARGET_RATIOS[mealType]);
           const isEditingThisMeal = editingMealType === mealType;
+          const meta = MEAL_META[mealType];
 
           return (
             <Card key={mealType} className="p-5 space-y-4">
               <div className="flex items-start justify-between">
-                <div className="space-y-0.5">
-                  <h2 className="text-xl font-bold text-zinc-900 tracking-tight">{MEAL_LABELS[mealType]}</h2>
-                  <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide">
-                    {mealCalories} <span className="font-normal text-[10px] lowercase text-zinc-300">/ {mealTarget} kcal</span>
-                  </p>
+                <div className="flex items-center gap-4">
+                  <div className={`h-12 w-12 rounded-2xl ${meta.bg} ${meta.color} flex items-center justify-center shadow-xs`}>
+                    <meta.icon size={24} />
+                  </div>
+                  <div className="space-y-0.5">
+                    <h2 className="text-xl font-bold text-zinc-900 tracking-tight">{MEAL_LABELS[mealType]}</h2>
+                    <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide">
+                      {mealCalories} <span className="font-normal text-[10px] lowercase text-zinc-300">/ {mealTarget} kcal</span>
+                    </p>
+                  </div>
                 </div>
                 <div className="relative">
                   <button
@@ -388,14 +401,16 @@ export default function Home() {
         {foodActionError ? <p className="text-sm text-red-500 px-1">{foodActionError}</p> : null}
 
         <Card className="p-5 flex items-center justify-between">
-          <div className="space-y-0.5">
-            <h2 className="text-xl font-bold text-zinc-900 tracking-tight">运动</h2>
-            <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide">
-              {burnedCalories} <span className="font-normal text-[10px] lowercase text-zinc-300">kcal burned</span>
-            </p>
-          </div>
-          <div className="h-10 w-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center">
-            <Dumbbell size={20} />
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center shadow-xs">
+              <Dumbbell size={24} />
+            </div>
+            <div className="space-y-0.5">
+              <h2 className="text-xl font-bold text-zinc-900 tracking-tight">运动</h2>
+              <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide">
+                {burnedCalories} <span className="font-normal text-[10px] lowercase text-zinc-300">kcal burned</span>
+              </p>
+            </div>
           </div>
         </Card>
 

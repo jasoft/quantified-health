@@ -3,13 +3,14 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, Scale } from 'lucide-react';
+import { format } from 'date-fns';
 import { WeightTrendSection } from '@/components/weight/WeightTrendSection';
 import { useRecordStore } from '@/store/useRecordStore';
 
 export default function WeightRecordPage() {
   const router = useRouter();
   const [weight, setWeight] = useState('');
-  const today = new Date().toISOString().split('T')[0];
+  const today = format(new Date(), 'yyyy-MM-dd');
   const { addWeight, isLoading } = useRecordStore();
 
   const onSave = async () => {

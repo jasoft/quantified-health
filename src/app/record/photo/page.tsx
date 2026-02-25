@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Camera, Loader2, Trash2 } from 'lucide-react';
+import { format } from 'date-fns';
 import { POCKETBASE_URL } from '@/lib/pocketbase';
 import { RecordAttachment } from '@/services/recordService';
 import { useRecordStore } from '@/store/useRecordStore';
@@ -17,7 +18,7 @@ function resolveAttachmentUrl(photo?: RecordAttachment): string | null {
 
 export default function PhotoRecordPage() {
   const router = useRouter();
-  const today = new Date().toISOString().split('T')[0];
+  const today = format(new Date(), 'yyyy-MM-dd');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { weightRecordsByDate, fetchWeightRecordByDate, saveWeightPhoto, removeWeightPhoto, isLoading, error } = useRecordStore();

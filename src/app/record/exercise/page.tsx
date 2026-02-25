@@ -3,13 +3,14 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, Dumbbell } from 'lucide-react';
+import { format } from 'date-fns';
 import { useRecordStore } from '@/store/useRecordStore';
 
 export default function ExerciseRecordPage() {
   const router = useRouter();
   const [calories, setCalories] = useState('');
   const { setExercise, isLoading } = useRecordStore();
-  const today = new Date().toISOString().split('T')[0];
+  const today = format(new Date(), 'yyyy-MM-dd');
 
   const handleSave = async () => {
     if (!calories) return;

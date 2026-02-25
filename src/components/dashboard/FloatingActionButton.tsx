@@ -34,17 +34,11 @@ export function FloatingActionButton() {
       { kind: 'link', icon: <Utensils size={20} />, label: '晚餐', href: '/record/food?type=dinner', color: 'bg-blue-400' },
       { kind: 'link', icon: <Moon size={20} />, label: '加餐', href: '/record/food?type=snack', color: 'bg-purple-400' },
       { kind: 'link', icon: <Dumbbell size={20} />, label: '运动', href: '/record/exercise', color: 'bg-red-400' },
-      {
-        kind: 'button',
-        icon: <Droplet size={20} />,
-        label: '饮水 +250ml',
-        color: 'bg-cyan-500',
-        onClick: () => addWater(today, 250),
-      },
+      { kind: 'link', icon: <Droplet size={20} />, label: '饮水', href: '/record/water', color: 'bg-cyan-500' },
       { kind: 'link', icon: <Scale size={20} />, label: '体重', href: '/record/weight', color: 'bg-slate-600' },
       { kind: 'link', icon: <Camera size={20} />, label: '体型照', href: '/record/photo', color: 'bg-indigo-500' },
     ],
-    [addWater, today]
+    []
   );
 
   return (
@@ -61,7 +55,7 @@ export function FloatingActionButton() {
                   onClick={() => setIsOpen(false)}
                   aria-label={action.label}
                 >
-                  <span className="bg-white px-2 py-1 rounded text-xs font-medium shadow-md text-gray-700">{action.label}</span>
+                  <span className="bg-white px-2 py-1 rounded text-xs font-medium shadow-md text-gray-700 whitespace-nowrap">{action.label}</span>
                   <div className={`${action.color} text-white p-3 rounded-full shadow-lg active:scale-90 transition-transform`}>
                     {action.icon}
                   </div>

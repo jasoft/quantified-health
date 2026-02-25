@@ -3,6 +3,7 @@
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ChevronRight, Copy, Loader2, Plus, Search } from 'lucide-react';
+import { format } from 'date-fns';
 import { useRecordStore } from '@/store/useRecordStore';
 import { FoodRecord, recordService } from '@/services/recordService';
 import { AmountInput } from '@/components/record/AmountInput';
@@ -22,7 +23,7 @@ function FoodRecordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const mealType = searchParams.get('type') || 'breakfast';
-  const today = new Date().toISOString().split('T')[0];
+  const today = format(new Date(), 'yyyy-MM-dd');
 
   const [query, setQuery] = useState('');
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
