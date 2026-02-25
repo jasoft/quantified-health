@@ -3,16 +3,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Camera, Loader2, Trash2 } from 'lucide-react';
-import { NOCODB_URL } from '@/lib/nocodb';
-import { NocoAttachment } from '@/services/recordService';
+import { POCKETBASE_URL } from '@/lib/pocketbase';
+import { RecordAttachment } from '@/services/recordService';
 import { useRecordStore } from '@/store/useRecordStore';
 
-function resolveAttachmentUrl(photo?: NocoAttachment): string | null {
+function resolveAttachmentUrl(photo?: RecordAttachment): string | null {
   if (!photo) return null;
   const raw = photo.url ?? photo.signedPath ?? photo.path ?? '';
   if (!raw) return null;
   if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
-  return `${NOCODB_URL}${raw.startsWith('/') ? '' : '/'}${raw}`;
+  return `${POCKETBASE_URL}${raw.startsWith('/') ? '' : '/'}${raw}`;
 }
 
 export default function PhotoRecordPage() {

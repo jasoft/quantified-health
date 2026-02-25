@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate:data:noco-to-pocketbase": "node scripts/migrate-nocodb-to-pocketbase.js"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",

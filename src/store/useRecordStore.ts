@@ -14,7 +14,7 @@ interface RecordState {
   fetchWeightHistory: (days: number) => Promise<void>;
   addFoodRecord: (record: FoodRecord) => Promise<void>;
   updateFoodRecord: (record: FoodRecord) => Promise<void>;
-  deleteFoodRecord: (recordId: number, date: string) => Promise<void>;
+  deleteFoodRecord: (recordId: string, date: string) => Promise<void>;
   addWater: (date: string, amount: number) => Promise<void>;
   setExercise: (date: string, calories: number) => Promise<void>;
   addWeight: (date: string, weight: number) => Promise<void>;
@@ -113,7 +113,7 @@ export const useRecordStore = create<RecordState>((set, get) => ({
     }
   },
 
-  deleteFoodRecord: async (recordId: number, date: string) => {
+  deleteFoodRecord: async (recordId: string, date: string) => {
     set({ isLoading: true, error: null });
     try {
       await recordService.deleteFoodRecord(recordId);

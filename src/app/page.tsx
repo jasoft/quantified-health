@@ -8,8 +8,8 @@ import { CalorieRing } from '@/components/dashboard/CalorieRing';
 import { FloatingActionButton } from '@/components/dashboard/FloatingActionButton';
 import { WaterTracker } from '@/components/dashboard/WaterTracker';
 import { WeightTrendSection } from '@/components/weight/WeightTrendSection';
-import { NOCODB_URL } from '@/lib/nocodb';
-import { FoodRecord, NocoAttachment } from '@/services/recordService';
+import { POCKETBASE_URL } from '@/lib/pocketbase';
+import { FoodRecord, RecordAttachment } from '@/services/recordService';
 import { useRecordStore } from '@/store/useRecordStore';
 import { useUserStore } from '@/store/useUserStore';
 
@@ -36,12 +36,12 @@ function scaleNutrient(value: number, fromAmount: number, toAmount: number): num
   return Math.round(((Number(value) / safeFromAmount) * toAmount) * 10) / 10;
 }
 
-function resolveAttachmentUrl(photo?: NocoAttachment): string | null {
+function resolveAttachmentUrl(photo?: RecordAttachment): string | null {
   if (!photo) return null;
   const raw = photo.url ?? photo.signedPath ?? photo.path ?? '';
   if (!raw) return null;
   if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
-  return `${NOCODB_URL}${raw.startsWith('/') ? '' : '/'}${raw}`;
+  return `${POCKETBASE_URL}${raw.startsWith('/') ? '' : '/'}${raw}`;
 }
 
 function dateLabel(date: Date): string {
