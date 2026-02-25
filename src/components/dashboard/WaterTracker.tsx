@@ -11,6 +11,7 @@ interface WaterTrackerProps {
 
 export function WaterTracker({ current, target, onAdd }: WaterTrackerProps) {
   const percentage = Math.min(100, (current / target) * 100);
+  const quickAddOptions = [100, 200, 300];
   
   return (
     <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 flex items-center justify-between">
@@ -24,19 +25,24 @@ export function WaterTracker({ current, target, onAdd }: WaterTrackerProps) {
         </div>
       </div>
       
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <div className="w-20 bg-blue-200 rounded-full h-1.5 overflow-hidden">
           <div 
             className="bg-blue-600 h-full transition-all duration-500" 
             style={{ width: `${percentage}%` }}
           ></div>
         </div>
-        <button 
-          onClick={() => onAdd(250)}
-          className="px-3 py-1 bg-white text-blue-600 border border-blue-200 rounded-lg text-xs font-bold active:scale-95 transition-transform"
-        >
-          +250ml
-        </button>
+        <div className="flex items-center gap-1.5">
+          {quickAddOptions.map((amount) => (
+            <button
+              key={amount}
+              onClick={() => onAdd(amount)}
+              className="px-2.5 py-1 bg-white text-blue-600 border border-blue-200 rounded-lg text-xs font-bold active:scale-95 transition-transform"
+            >
+              {amount}ml
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

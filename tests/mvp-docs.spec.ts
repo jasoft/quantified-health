@@ -15,6 +15,27 @@ test("home should show meal record sections", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "加餐", exact: true })).toBeVisible();
 });
 
+test("home water tracker should provide 100/200/300ml quick add buttons", async ({ page }) => {
+  await page.goto("/");
+  const waterText = page.locator("p", { hasText: "ml" }).first();
+  const before = await waterText.textContent();
+  const beforeValue = Number((before ?? "0").split("/")[0].trim());
+
+  await expect(page.getByRole("button", { name: "100ml" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "200ml" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "300ml" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /250ml/i })).toHaveCount(0);
+
+  await page.getByRole("button", { name: "200ml" }).click();
+
+  await expect
+    .poll(async () => {
+      const after = await waterText.textContent();
+      return Number((after ?? "0").split("/")[0].trim());
+    })
+    .toBeGreaterThanOrEqual(beforeValue + 200);
+});
+
 test("home should show edit menu button on each meal card", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("button", { name: "编辑早餐" })).toBeVisible();
