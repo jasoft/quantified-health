@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell } from 'recharts';
 
 interface CalorieRingProps {
   target: number;
@@ -10,6 +10,7 @@ interface CalorieRingProps {
 }
 
 export function CalorieRing({ target, consumed, burned }: CalorieRingProps) {
+  const chartSize = 172;
   const remaining = target - consumed + burned;
   const isOver = remaining < 0;
 
@@ -24,26 +25,28 @@ export function CalorieRing({ target, consumed, burned }: CalorieRingProps) {
   }
 
   return (
-    <div data-testid="calorie-ring" className="relative mx-auto h-[172px] w-[172px] min-w-[172px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={58}
-            outerRadius={76}
-            paddingAngle={3}
-            dataKey="value"
-            startAngle={90}
-            endAngle={-270}
-          >
-            {data.map((_, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
-            ))}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
+    <div
+      data-testid="calorie-ring"
+      className="relative mx-auto min-w-[172px]"
+      style={{ width: chartSize, height: chartSize }}
+    >
+      <PieChart width={chartSize} height={chartSize}>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          innerRadius={58}
+          outerRadius={76}
+          paddingAngle={3}
+          dataKey="value"
+          startAngle={90}
+          endAngle={-270}
+        >
+          {data.map((_, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
+          ))}
+        </Pie>
+      </PieChart>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
         <span className="text-xs text-gray-600 font-medium">还可以吃</span>
