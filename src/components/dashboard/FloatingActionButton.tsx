@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { Plus, Coffee, Utensils, Moon, Dumbbell, Droplet, Scale, Camera } from 'lucide-react';
 import Link from 'next/link';
+import { format } from 'date-fns';
 import { useRecordStore } from '@/store/useRecordStore';
 
 interface LinkAction {
@@ -24,7 +25,7 @@ interface ButtonAction {
 export function FloatingActionButton() {
   const [isOpen, setIsOpen] = useState(false);
   const { addWater } = useRecordStore();
-  const today = new Date().toISOString().split('T')[0];
+  const today = format(new Date(), 'yyyy-MM-dd');
 
   const actions = useMemo<(LinkAction | ButtonAction)[]>(
     () => [

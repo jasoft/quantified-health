@@ -12,6 +12,7 @@ import { POCKETBASE_URL } from '@/lib/pocketbase';
 import { FoodRecord, RecordAttachment } from '@/services/recordService';
 import { useRecordStore } from '@/store/useRecordStore';
 import { useUserStore } from '@/store/useUserStore';
+import { Card } from '@/components/ui/Card';
 
 const WEEKDAY_LABELS = ['一', '二', '三', '四', '五', '六', '日'];
 
@@ -123,9 +124,9 @@ export default function Home() {
   const dailyPhotoUrl = resolveAttachmentUrl(safeWeightRecordsByDate[selectedDate]?.photo?.[0]);
 
   const macroItems = [
-    { label: '蛋白质', current: consumedProtein, target: userTarget.target_protein, color: 'bg-blue-300' },
-    { label: '脂肪', current: consumedFat, target: userTarget.target_fat, color: 'bg-pink-300' },
-    { label: '碳水化合物', current: consumedCarbs, target: userTarget.target_carbs, color: 'bg-amber-300' },
+    { label: '蛋白质', current: consumedProtein, target: userTarget.target_protein, color: 'bg-sky-400' },
+    { label: '脂肪', current: consumedFat, target: userTarget.target_fat, color: 'bg-rose-400' },
+    { label: '碳水化合物', current: consumedCarbs, target: userTarget.target_carbs, color: 'bg-amber-400' },
   ];
 
   const selectDate = (nextDate: string) => {
@@ -203,9 +204,9 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-100 font-sans pb-32">
-      <section className="bg-sky-100 px-4 pt-4 pb-8 rounded-b-[28px]">
-        <div className="flex items-center justify-between mb-4">
+    <div className="flex min-h-screen flex-col bg-zinc-50 font-sans pb-32">
+      <section className="bg-sky-50 px-4 pt-6 pb-10 rounded-b-[32px] shadow-sm">
+        <div className="flex items-center justify-between mb-6">
           <button
             type="button"
             onClick={() => {
@@ -213,11 +214,11 @@ export default function Home() {
               selectDate(format(addWeeks(parseISO(`${selectedDate}T00:00:00`), -1), 'yyyy-MM-dd'));
             }}
             aria-label="上一周"
-            className="p-2 text-zinc-700"
+            className="p-2 text-zinc-400 hover:text-zinc-600 transition-colors"
           >
-            <ChevronLeft size={22} />
+            <ChevronLeft size={20} />
           </button>
-          <h1 className="text-xl font-bold text-zinc-900">{dateLabel(selectedDateObj)}</h1>
+          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">{dateLabel(selectedDateObj)}</h1>
           <button
             type="button"
             onClick={() => {
@@ -225,15 +226,15 @@ export default function Home() {
               selectDate(format(addWeeks(parseISO(`${selectedDate}T00:00:00`), 1), 'yyyy-MM-dd'));
             }}
             aria-label="下一周"
-            className="p-2 text-zinc-700"
+            className="p-2 text-zinc-400 hover:text-zinc-600 transition-colors"
           >
-            <ChevronRight size={22} />
+            <ChevronRight size={20} />
           </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-2 mb-3">
+        <div className="grid grid-cols-7 gap-2 mb-2">
           {WEEKDAY_LABELS.map((label) => (
-            <div key={label} className="text-center text-zinc-600 text-sm">
+            <div key={label} className="text-center text-zinc-400 text-[10px] font-bold uppercase tracking-widest">
               {label}
             </div>
           ))}
@@ -241,17 +242,21 @@ export default function Home() {
         <div className="grid grid-cols-7 gap-2">
           {weekDays.map((date, index) => {
             const active = isSameDay(date, selectedDateObj);
+            const today = isToday(date);
             return (
               <button
                 key={date.toISOString()}
                 type="button"
                 onClick={() => selectDate(format(date, 'yyyy-MM-dd'))}
-                className={`h-9 w-9 mx-auto rounded-full text-sm transition ${
-                  active ? 'bg-blue-300 text-zinc-900 font-bold' : 'text-zinc-600'
+                className={`relative h-10 w-10 mx-auto rounded-xl text-sm transition flex flex-col items-center justify-center ${
+                  active ? 'bg-white shadow-xs text-blue-600 font-bold' : 'text-zinc-500 hover:text-zinc-900'
                 }`}
                 aria-label={`${WEEKDAY_LABELS[index]} ${format(date, 'd')}日`}
               >
-                {format(date, 'd')}
+                <span>{format(date, 'd')}</span>
+                {today && (
+                  <span className={`absolute bottom-1 w-1 h-1 rounded-full ${active ? 'bg-blue-600' : 'bg-blue-400'}`} />
+                )}
               </button>
             );
           })}
@@ -270,51 +275,52 @@ export default function Home() {
         </div>
       </section>
 
-      <main className="px-4 py-4 space-y-4 max-w-md mx-auto w-full">
-        <section className="bg-zinc-50 rounded-xl border border-zinc-100 shadow-sm p-4">
+      <main className="px-4 py-4 space-y-6 max-w-md mx-auto w-full">
+        <Card className="p-4">
           <div className="grid grid-cols-3 gap-4">
             {macroItems.map((item) => {
               const ratio = Math.min(100, (item.current / Math.max(1, item.target)) * 100);
               return (
                 <div key={item.label} className="space-y-2">
-                  <h3 className="text-sm font-semibold text-zinc-700">{item.label}</h3>
-                  <div className="h-2 rounded-full bg-zinc-100 overflow-hidden">
+                  <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-tight">{item.label}</h3>
+                  <div className="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
                     <div className={`h-full ${item.color}`} style={{ width: `${ratio}%` }} />
                   </div>
-                  <p className="text-sm text-zinc-900 font-semibold">
-                    {Math.round(item.current)}/{Math.round(item.target)}克
+                  <p className="text-sm text-zinc-900 font-bold whitespace-nowrap">
+                    {Math.round(item.current)} <span className="text-zinc-400 font-medium tracking-tighter">/ {Math.round(item.target)}g</span>
                   </p>
                 </div>
               );
             })}
           </div>
-        </section>
+        </Card>
 
         {MEAL_ORDER.map((mealType) => {
           const mealFoods = groupedMeals[mealType];
           const mealCalories = mealFoods.reduce((sum, item) => sum + Number(item.calories), 0);
           const mealTarget = Math.round(userTarget.target_calories * MEAL_TARGET_RATIOS[mealType]);
-          const intakeText = mealFoods.length > 0 ? `已摄入${mealCalories}/${mealTarget}千卡` : '已摄入0千卡';
           const isEditingThisMeal = editingMealType === mealType;
 
           return (
-            <section key={mealType} className="bg-zinc-50 rounded-xl border border-zinc-100 shadow-sm p-4 space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-end gap-2.5">
-                  <h2 className="text-xl font-semibold text-zinc-900 leading-none">{MEAL_LABELS[mealType]}</h2>
-                  <p className="text-sm text-zinc-500 leading-tight">{intakeText}</p>
+            <Card key={mealType} className="p-5 space-y-4">
+              <div className="flex items-start justify-between">
+                <div className="space-y-0.5">
+                  <h2 className="text-xl font-bold text-zinc-900 tracking-tight">{MEAL_LABELS[mealType]}</h2>
+                  <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide">
+                    {mealCalories} <span className="font-normal text-[10px] lowercase text-zinc-300">/ {mealTarget} kcal</span>
+                  </p>
                 </div>
                 <div className="relative">
                   <button
                     type="button"
                     aria-label={`编辑${MEAL_LABELS[mealType]}`}
                     onClick={() => setOpenMealMenu((prev) => (prev === mealType ? null : mealType))}
-                    className="h-8 w-8 rounded-full border border-zinc-200 text-zinc-500 flex items-center justify-center"
+                    className="h-8 w-8 rounded-full border border-zinc-200/50 text-zinc-400 hover:text-zinc-600 transition-colors flex items-center justify-center"
                   >
                     <MoreHorizontal size={18} />
                   </button>
                   {openMealMenu === mealType ? (
-                    <div className="absolute right-0 mt-2 min-w-28 rounded-xl border border-zinc-200 bg-white shadow-lg z-10 p-1">
+                    <div className="absolute right-0 mt-2 min-w-32 rounded-xl border border-zinc-200 bg-white shadow-lg z-10 p-1">
                       {mealFoods.length > 0 ? (
                         <button
                           type="button"
@@ -323,12 +329,12 @@ export default function Home() {
                             setOpenMealMenu(null);
                             setFoodActionError(null);
                           }}
-                          className="w-full text-left px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 rounded-lg"
+                          className="w-full text-left px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 rounded-lg transition-colors"
                         >
                           {isEditingThisMeal ? '完成编辑' : '编辑记录'}
                         </button>
                       ) : (
-                        <p className="px-3 py-2 text-sm text-zinc-400">暂无记录可编辑</p>
+                        <p className="px-3 py-2 text-xs text-zinc-400">暂无记录可编辑</p>
                       )}
                     </div>
                   ) : null}
@@ -336,23 +342,25 @@ export default function Home() {
               </div>
 
               {mealFoods.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-4 pt-1">
                   {mealFoods.map((food) => (
-                    <div key={`${food.name}-${food.Id ?? food.amount}`} className="flex justify-between items-start gap-4">
-                      <div>
-                        <p className="text-xl font-medium text-zinc-900 leading-tight">{food.name}</p>
-                        <p className="text-sm text-zinc-500 mt-1">{Math.round(food.amount)}克</p>
+                    <div key={`${food.name}-${food.Id ?? food.amount}`} className="flex justify-between items-center group">
+                      <div className="space-y-0.5">
+                        <p className="text-base font-semibold text-zinc-800 leading-tight">{food.name}</p>
+                        <p className="text-xs text-zinc-400">{Math.round(food.amount)}g</p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-xl font-semibold text-zinc-900 whitespace-nowrap">{Math.round(food.calories)}千卡</p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-base font-bold text-zinc-900 tabular-nums">
+                          {Math.round(food.calories)} <span className="text-[10px] font-medium text-zinc-300">kcal</span>
+                        </p>
                         {isEditingThisMeal ? (
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1 animate-in fade-in slide-in-from-right-2 duration-200">
                             <button
                               type="button"
                               aria-label={`修改${food.name}`}
                               disabled={isLoading || !food.Id}
                               onClick={() => openEditModal(food)}
-                              className="h-8 w-8 rounded-full border border-zinc-200 text-zinc-600 flex items-center justify-center disabled:opacity-40"
+                              className="h-8 w-8 rounded-full border border-zinc-200 text-zinc-500 hover:bg-zinc-50 flex items-center justify-center disabled:opacity-40 transition-colors"
                             >
                               <Pencil size={14} />
                             </button>
@@ -361,7 +369,7 @@ export default function Home() {
                               aria-label={`删除${food.name}`}
                               disabled={isLoading || !food.Id}
                               onClick={() => void handleDeleteFood(food)}
-                              className="h-8 w-8 rounded-full border border-zinc-200 text-red-500 flex items-center justify-center disabled:opacity-40"
+                              className="h-8 w-8 rounded-full border border-zinc-200 text-red-400 hover:bg-red-50 flex items-center justify-center disabled:opacity-40 transition-colors"
                             >
                               <Trash2 size={14} />
                             </button>
@@ -372,51 +380,70 @@ export default function Home() {
                   ))}
                 </div>
               ) : (
-                <p className="text-zinc-400 text-sm">当前餐次暂无记录</p>
+                <p className="text-zinc-300 text-xs italic">当前餐次暂无记录</p>
               )}
-            </section>
+            </Card>
           );
         })}
         {foodActionError ? <p className="text-sm text-red-500 px-1">{foodActionError}</p> : null}
 
-        <section className="bg-zinc-50 rounded-xl border border-zinc-100 shadow-sm p-4">
-          <div className="flex items-end gap-3">
-            <h2 className="text-xl font-semibold text-zinc-900 leading-none">运动</h2>
-            <p className="text-sm text-zinc-500">已消耗{burnedCalories}千卡</p>
+        <Card className="p-5 flex items-center justify-between">
+          <div className="space-y-0.5">
+            <h2 className="text-xl font-bold text-zinc-900 tracking-tight">运动</h2>
+            <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide">
+              {burnedCalories} <span className="font-normal text-[10px] lowercase text-zinc-300">kcal burned</span>
+            </p>
           </div>
-        </section>
+          <div className="h-10 w-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center">
+            <Dumbbell size={20} />
+          </div>
+        </Card>
 
         <WeightTrendSection title="体重趋势" />
 
-        <section className="bg-zinc-50 rounded-xl border border-zinc-100 shadow-sm p-4 space-y-4">
+        <Card className="p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-zinc-900 leading-none">体型照</h2>
-            <Link href="/record/photo" className="text-sm text-blue-600 font-semibold inline-flex items-center gap-1">
-              <Camera size={16} />
+            <div className="space-y-0.5">
+              <h2 className="text-xl font-bold text-zinc-900 tracking-tight">体型照</h2>
+              <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide">
+                Daily Body Photo
+              </p>
+            </div>
+            <Link
+              href="/record/photo"
+              className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 text-xs font-bold hover:bg-blue-100 transition-colors inline-flex items-center gap-1.5"
+            >
+              <Camera size={14} />
               {dailyPhotoUrl ? '重新上传' : '去记录'}
             </Link>
           </div>
-          <div className="h-52 rounded-xl border border-zinc-200 bg-zinc-100 overflow-hidden flex items-center justify-center">
+
+          <div className="aspect-[4/3] w-full rounded-xl border border-zinc-200/50 bg-zinc-50 overflow-hidden flex items-center justify-center relative group">
             {dailyPhotoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={dailyPhotoUrl} alt="体型照" className="w-full h-full object-cover" />
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={dailyPhotoUrl} alt="体型照" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => void removeWeightPhoto(selectedDate)}
+                  className="absolute bottom-3 right-3 p-2 rounded-lg bg-white/90 backdrop-blur-sm text-red-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="移除照片"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </>
             ) : (
-              <p className="text-zinc-400 text-sm">当日暂无体型照</p>
+              <div className="flex flex-col items-center gap-2 text-zinc-300">
+                <Camera size={32} strokeWidth={1.5} />
+                <p className="text-xs font-medium">当日暂无体型照</p>
+              </div>
             )}
           </div>
-          <button
-            type="button"
-            disabled={!dailyPhotoUrl || isLoading}
-            onClick={() => void removeWeightPhoto(selectedDate)}
-            className="w-full py-2.5 rounded-xl border border-zinc-200 text-zinc-600 disabled:opacity-50"
-          >
-            移除
-          </button>
-          {error ? <p className="text-sm text-red-500">{error}</p> : null}
-        </section>
+        </Card>
 
-        <section>
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 px-1">水分补给</h2>
+        <section className="space-y-3">
+          <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-widest px-1">水分补给</h2>
           <WaterTracker current={currentWater} target={userTarget.target_water} onAdd={(amount) => addWater(selectedDate, amount)} />
         </section>
       </main>
