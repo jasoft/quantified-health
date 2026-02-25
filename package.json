@@ -3,7 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "portless keepfit next dev",
+    "dev:raw": "PORTLESS=0 next dev",
+    "portless:proxy:start": "portless proxy start",
+    "portless:proxy:stop": "portless proxy stop",
+    "portless:list": "portless list",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -28,6 +32,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "portless": "^0.4.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

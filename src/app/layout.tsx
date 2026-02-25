@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Quantified Health PWA',
+  title: '体重小计',
   description: 'A geeks quantified health tracker',
   manifest: '/manifest.json',
 };

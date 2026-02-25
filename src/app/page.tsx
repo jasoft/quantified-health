@@ -217,7 +217,7 @@ export default function Home() {
           >
             <ChevronLeft size={22} />
           </button>
-          <h1 className="text-2xl font-bold text-zinc-900">{dateLabel(selectedDateObj)}</h1>
+          <h1 className="text-xl font-bold text-zinc-900">{dateLabel(selectedDateObj)}</h1>
           <button
             type="button"
             onClick={() => {
@@ -271,7 +271,7 @@ export default function Home() {
       </section>
 
       <main className="px-4 py-4 space-y-4 max-w-md mx-auto w-full">
-        <section className="bg-zinc-50 rounded-2xl border border-zinc-100 shadow-sm p-4">
+        <section className="bg-zinc-50 rounded-xl border border-zinc-100 shadow-sm p-4">
           <div className="grid grid-cols-3 gap-4">
             {macroItems.map((item) => {
               const ratio = Math.min(100, (item.current / Math.max(1, item.target)) * 100);
@@ -298,10 +298,10 @@ export default function Home() {
           const isEditingThisMeal = editingMealType === mealType;
 
           return (
-            <section key={mealType} className="bg-zinc-50 rounded-2xl border border-zinc-100 shadow-sm p-4 space-y-3">
+            <section key={mealType} className="bg-zinc-50 rounded-xl border border-zinc-100 shadow-sm p-4 space-y-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-end gap-2.5">
-                  <h2 className="text-2xl font-semibold text-zinc-900 leading-none">{MEAL_LABELS[mealType]}</h2>
+                  <h2 className="text-xl font-semibold text-zinc-900 leading-none">{MEAL_LABELS[mealType]}</h2>
                   <p className="text-sm text-zinc-500 leading-tight">{intakeText}</p>
                 </div>
                 <div className="relative">
@@ -344,7 +344,7 @@ export default function Home() {
                         <p className="text-sm text-zinc-500 mt-1">{Math.round(food.amount)}克</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <p className="text-2xl font-semibold text-zinc-900 whitespace-nowrap">{Math.round(food.calories)}千卡</p>
+                        <p className="text-xl font-semibold text-zinc-900 whitespace-nowrap">{Math.round(food.calories)}千卡</p>
                         {isEditingThisMeal ? (
                           <div className="flex items-center gap-1">
                             <button
@@ -379,7 +379,7 @@ export default function Home() {
         })}
         {foodActionError ? <p className="text-sm text-red-500 px-1">{foodActionError}</p> : null}
 
-        <section className="bg-zinc-50 rounded-2xl border border-zinc-100 shadow-sm p-4">
+        <section className="bg-zinc-50 rounded-xl border border-zinc-100 shadow-sm p-4">
           <div className="flex items-end gap-3">
             <h2 className="text-xl font-semibold text-zinc-900 leading-none">运动</h2>
             <p className="text-sm text-zinc-500">已消耗{burnedCalories}千卡</p>
@@ -388,7 +388,7 @@ export default function Home() {
 
         <WeightTrendSection title="体重趋势" />
 
-        <section className="bg-zinc-50 rounded-2xl border border-zinc-100 shadow-sm p-4 space-y-4">
+        <section className="bg-zinc-50 rounded-xl border border-zinc-100 shadow-sm p-4 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-zinc-900 leading-none">体型照</h2>
             <Link href="/record/photo" className="text-sm text-blue-600 font-semibold inline-flex items-center gap-1">
@@ -425,7 +425,7 @@ export default function Home() {
 
       {editingFood ? (
         <div className="fixed inset-0 bg-black/35 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white border border-zinc-200 p-5 space-y-4 shadow-xl">
+          <div className="w-full max-w-sm rounded-xl bg-white border border-zinc-200 p-5 space-y-4 shadow-xl">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-lg font-semibold text-zinc-900">修改饮食记录</h3>
