@@ -80,18 +80,22 @@ start_proxy() {
         docker rm -f "$CONTAINER_NAME" >/dev/null
     fi
 
-    local -a extra_args=()
     if [[ "$(uname -s)" == "Linux" ]]; then
-        extra_args+=(--add-host=host.docker.internal:host-gateway)
+        docker run -d \
+            --name "$CONTAINER_NAME" \
+            --restart unless-stopped \
+            -p "${LISTEN_PORT}:80" \
+            -v "${CONF_PATH}:/etc/nginx/conf.d/default.conf:ro" \
+            --add-host=host.docker.internal:host-gateway \
+            "$NGINX_IMAGE" >/dev/null
+    else
+        docker run -d \
+            --name "$CONTAINER_NAME" \
+            --restart unless-stopped \
+            -p "${LISTEN_PORT}:80" \
+            -v "${CONF_PATH}:/etc/nginx/conf.d/default.conf:ro" \
+            "$NGINX_IMAGE" >/dev/null
     fi
-
-    docker run -d \
-        --name "$CONTAINER_NAME" \
-        --restart unless-stopped \
-        -p "${LISTEN_PORT}:80" \
-        -v "${CONF_PATH}:/etc/nginx/conf.d/default.conf:ro" \
-        "${extra_args[@]}" \
-        "$NGINX_IMAGE" >/dev/null
 
     echo "代理已启动: http://localhost:${LISTEN_PORT}"
     echo "server_name=${SERVER_NAME}"
