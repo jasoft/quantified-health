@@ -1,0 +1,11 @@
+{
+    auto_https off
+}
+
+${SERVER_NAME} {
+    request_body {
+        max_size 50MB
+    }
+
+    reverse_proxy ${UPSTREAM_HOST}:${UPSTREAM_PORT}
+}

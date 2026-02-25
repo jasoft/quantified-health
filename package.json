@@ -12,11 +12,11 @@
         "start": "next start",
         "lint": "eslint",
         "migrate:data:noco-to-pocketbase": "node scripts/migrate-nocodb-to-pocketbase.js",
-        "proxy:up": "scripts/nginx-proxy.sh start",
-        "proxy:down": "scripts/nginx-proxy.sh stop",
-        "proxy:restart": "scripts/nginx-proxy.sh restart",
-        "proxy:status": "scripts/nginx-proxy.sh status",
-        "proxy:logs": "scripts/nginx-proxy.sh logs"
+        "proxy:up": "scripts/caddy-proxy.sh start",
+        "proxy:down": "scripts/caddy-proxy.sh stop",
+        "proxy:restart": "scripts/caddy-proxy.sh restart",
+        "proxy:status": "scripts/caddy-proxy.sh status",
+        "proxy:logs": "scripts/caddy-proxy.sh logs"
     },
     "dependencies": {
         "@ducanh2912/next-pwa": "^10.2.9",

@@ -1,32 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONTAINER_NAME="${CONTAINER_NAME:-keepfit-nginx-proxy}"
-NGINX_IMAGE="${NGINX_IMAGE:-nginx:1.27-alpine}"
-LISTEN_PORT="${LISTEN_PORT:-8080}"
+CONTAINER_NAME="${CONTAINER_NAME:-keepfit-caddy-proxy}"
+CADDY_IMAGE="${CADDY_IMAGE:-caddy:2-alpine}"
+LISTEN_PORT="${LISTEN_PORT:-18080}"
 UPSTREAM_HOST="${UPSTREAM_HOST:-host.docker.internal}"
 UPSTREAM_PORT="${UPSTREAM_PORT:-3000}"
 SERVER_NAME="${SERVER_NAME:-*.macmini.home}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TEMPLATE_PATH="${TEMPLATE_PATH:-${SCRIPT_DIR}/../docker/nginx-proxy/nginx.conf.template}"
+TEMPLATE_PATH="${TEMPLATE_PATH:-${SCRIPT_DIR}/../docker/caddy-proxy/Caddyfile.template}"
 RUNTIME_DIR="${RUNTIME_DIR:-/tmp/${CONTAINER_NAME}}"
-CONF_PATH="${RUNTIME_DIR}/default.conf"
+CONF_PATH="${RUNTIME_DIR}/Caddyfile"
 
 usage() {
     cat <<'EOF'
 用法:
-  scripts/nginx-proxy.sh start     启动代理容器
-  scripts/nginx-proxy.sh stop      停止并删除代理容器
-  scripts/nginx-proxy.sh restart   重启代理容器
-  scripts/nginx-proxy.sh logs      查看代理日志
-  scripts/nginx-proxy.sh status    查看代理状态
+  scripts/caddy-proxy.sh start     启动代理容器
+  scripts/caddy-proxy.sh stop      停止并删除代理容器
+  scripts/caddy-proxy.sh restart   重启代理容器
+  scripts/caddy-proxy.sh logs      查看代理日志
+  scripts/caddy-proxy.sh status    查看代理状态
 
 可用环境变量:
-  CONTAINER_NAME   容器名 (默认: keepfit-nginx-proxy)
-  NGINX_IMAGE      镜像名 (默认: nginx:1.27-alpine)
-  LISTEN_PORT      映射到宿主机端口 (默认: 8080)
-  SERVER_NAME      Nginx server_name (默认: *.macmini.home)
+  CONTAINER_NAME   容器名 (默认: keepfit-caddy-proxy)
+  CADDY_IMAGE      镜像名 (默认: caddy:2-alpine)
+  LISTEN_PORT      映射到宿主机端口 (默认: 18080)
+  SERVER_NAME      Caddy 站点域名 (默认: *.macmini.home)
   UPSTREAM_HOST    反向代理目标主机 (默认: host.docker.internal)
   UPSTREAM_PORT    反向代理目标端口 (默认: 3000)
 EOF
@@ -85,19 +85,19 @@ start_proxy() {
             --name "$CONTAINER_NAME" \
             --restart unless-stopped \
             -p "${LISTEN_PORT}:80" \
-            -v "${CONF_PATH}:/etc/nginx/conf.d/default.conf:ro" \
+            -v "${CONF_PATH}:/etc/caddy/Caddyfile:ro" \
             --add-host=host.docker.internal:host-gateway \
-            "$NGINX_IMAGE" >/dev/null
+            "$CADDY_IMAGE" >/dev/null
     else
         docker run -d \
             --name "$CONTAINER_NAME" \
             --restart unless-stopped \
             -p "${LISTEN_PORT}:80" \
-            -v "${CONF_PATH}:/etc/nginx/conf.d/default.conf:ro" \
-            "$NGINX_IMAGE" >/dev/null
+            -v "${CONF_PATH}:/etc/caddy/Caddyfile:ro" \
+            "$CADDY_IMAGE" >/dev/null
     fi
 
-    echo "代理已启动: http://localhost:${LISTEN_PORT}"
+    echo "Caddy 代理已启动: http://localhost:${LISTEN_PORT}"
     echo "server_name=${SERVER_NAME}"
     echo "upstream=http://${UPSTREAM_HOST}:${UPSTREAM_PORT}"
 }

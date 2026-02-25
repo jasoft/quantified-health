@@ -35,12 +35,12 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-## Docker Nginx 反向代理（局域网访问）
+## Docker Caddy 反向代理（局域网访问）
 
-如果您已经在局域网 DNS（如 `dnsmasq`）把 `*.macmini.home` 指到本机，可用以下命令快速起一个 Nginx 代理容器：
+如果您已经在局域网 DNS（如 `dnsmasq`）把 `*.macmini.home` 指到本机，可用以下命令快速起一个 Caddy 代理容器：
 
 ```bash
-# 启动（默认监听 8080，反向代理到 host.docker.internal:3000）
+# 启动（默认监听 18080，反向代理到 host.docker.internal:3000）
 npm run proxy:up
 
 # 停止
@@ -63,4 +63,4 @@ SERVER_NAME=*.macmini.home \
 npm run proxy:up
 ```
 
-默认配置文件模板在 `docker/nginx-proxy/nginx.conf.template`，启动脚本在 `scripts/nginx-proxy.sh`。
+默认配置文件模板在 `docker/caddy-proxy/Caddyfile.template`，启动脚本在 `scripts/caddy-proxy.sh`。
